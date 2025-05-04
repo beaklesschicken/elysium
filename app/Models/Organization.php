@@ -19,6 +19,7 @@ class Organization extends Model
     {
         return $this->hasMany(Team::class);
     }
+
     public function getTeamsIdAttribute()
     {
         return $this->teams->pluck('id');

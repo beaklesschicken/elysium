@@ -11,13 +11,17 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/contact', function() {
+    return view('contact');
+});
+
 Route::get('dashboard', [DashboardController::class,'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::controller(TeamController::class)->group(function() {
-    Route::get('/teams/{team_id?}','index')->name('admin-teams');
     Route::get('/teams/new','create')->name('admin-team-create');
+    Route::get('/teams/{team_id?}','index')->name('admin-teams');
 
 })->middleware(['auth', 'verified']);
 
