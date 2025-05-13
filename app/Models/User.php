@@ -73,4 +73,8 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
     
+    public function credentials()
+    {
+        return $this->belongsToMany(Credential::class);
+    }
 }

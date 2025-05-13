@@ -18,5 +18,14 @@ class Employee extends Model
     public function teams()
     {
         $this->belongsToMany(Team::class);
-    }    
+    }  
+    public function assignCredential($employee_id)
+    {
+        $employee_id = $employee_id ?: auth()->user;
+        return $this->assigned()->attach($employee_id);
+    }  
+    public function assigned()
+    {
+        return $this->morphToMany(Credential::class,'assignables')->withTimestamps();
+    }
 }

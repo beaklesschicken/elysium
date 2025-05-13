@@ -33,4 +33,8 @@ class TeamController extends Controller
     {
         return view('teams.create');
     }
+    public function show()
+    {
+        //
+    }
 }

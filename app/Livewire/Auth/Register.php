@@ -38,6 +38,12 @@ class Register extends Component
 
         Auth::login($user);
 
+        /* check to make sure this user is not already linked to any organizations. If 
+        *  if so, redirect them to the dashboard.
+        */
+
+
+
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
 }

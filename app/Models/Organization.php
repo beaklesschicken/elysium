@@ -24,4 +24,15 @@ class Organization extends Model
     {
         return $this->teams->pluck('id');
     }
+
+        public function assignCredential($organization_id)
+    {
+        $organization_id = $organization_id ?: auth()->user;
+        return $this->assigned()->attach($organization_id);
+    }  
+
+    public function assigned()
+    {
+        return $this->morphToMany(Credential::class,'assignables')->withTimestamps();
+    }
 }

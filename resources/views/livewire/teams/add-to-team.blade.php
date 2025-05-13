@@ -41,6 +41,6 @@
             </option>
             @endforeach
     </datalist>
-    <div class="text-white border-1 rounded-md px-4">{{json_encode($managers) }}</div>
+    {{-- <div class="text-white border-1 rounded-md px-4 pt-2 my-2 mx-auto w-full">{{json_encode($managers) }}</div> --}}
     </form>
 </div>

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('city');
             $table->string('state_province');
             $table->string('postcode');
-            $table->unsignedBigInteger('plan');
+            $table->unsignedBigInteger('plan')->default(0);
             $table->longText('settings')->nullable();
             $table->timestamps();
         });

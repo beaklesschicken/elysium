@@ -58,6 +58,10 @@ class AddToTeam extends Component
             $this->employees = [];
         }
     }
+    public function changeIncoming()
+    {
+        //
+    }
     public function render()
     {
         return view('livewire.teams.add-to-team');
