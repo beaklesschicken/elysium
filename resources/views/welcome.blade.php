@@ -124,7 +124,8 @@
             <p class="mt-2 max-w-lg text-sm/6 text-gray-700 max-lg:text-center mb-4">
                 Serving local Northern Indiana into Michiana. If we're outside of the circle, we can still work together! 
             </p>
-            <div class="rounded-lg bg-top-[-100px] bg-left-[-100] h-50 flex-1 border border-gray-800 shadow-md hidden sm:block" style="background-image: url('{{ asset('imx/states.svg') }}') "></div>
+            <div class="rounded-lg bg-top-[-100px] bg-left-[-100] h-50 flex-1 border border-gray-800 shadow-md hidden sm:block
+            " style="background-image: url('{{ asset('imx/states.svg') }}') "></div>
         </div>
         {{-- Services --}}
         <div class="p-4 rounded-lg bg-white opacity-90  col-span-2">
@@ -176,7 +177,7 @@
 
 
         <div class="col-span-2 rounded-md bg-white opacity-90"><!-- item container -->
-            @livewire('contact-form')
+            {{-- @livewire('contact-form') --}}
         </div><!-- End Container -->
         {{-- Pricing for service
         <div class="bg-white col-span-2 align-items-center justify-content-center text-center opacity-90 p-4 rounded-md">
