@@ -35,7 +35,7 @@ class ContactForm extends Component
             ),
             function($message){
                 $message->from('contact@elysiumhospitality.net');
-                $message->to('contact@elysiumhospitality.net', 'Eric')->subject('Contact Form');
+                $message->to('eric@elysiumhospitality.net', 'Eric')->subject('Contact Form');
             }
         );
 
