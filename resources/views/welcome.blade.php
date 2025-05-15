@@ -176,7 +176,7 @@
 
 
         <div class="col-span-2 rounded-md bg-white opacity-90"><!-- item container -->
-            {{-- @livewire('contact-form') --}}
+            @livewire('contact-form')
         </div><!-- End Container -->
         {{-- Pricing for service
         <div class="bg-white col-span-2 align-items-center justify-content-center text-center opacity-90 p-4 rounded-md">
