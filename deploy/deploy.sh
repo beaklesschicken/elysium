@@ -58,11 +58,13 @@ if [[ ! -x "$NODE_DIR/bin/node" ]]; then
 fi
 export PATH="$NODE_DIR/bin:$PATH"
 
+# "First" lasts until one deploy has finished, so a failed first run never goes live on its retry.
+FIRST_DONE_MARKER="$HOME/.first-deploy-done"
 FIRST=0
+[[ -f "$FIRST_DONE_MARKER" ]] || FIRST=1
 if [[ ! -d "$APP_DIR/.git" ]]; then
     log "Cloning $REPO"
     git clone --branch "$BRANCH" "$REPO" "$APP_DIR"
-    FIRST=1
 fi
 cd "$APP_DIR"
 
@@ -99,16 +101,17 @@ if [[ ! -f .env ]]; then
     NEW_ENV=1
 fi
 
+log "Installing PHP dependencies"
+composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# After composer: resources/css/app.css imports Flux's stylesheet from vendor/.
 if [[ -f package.json ]]; then
     log "Building frontend"
     npm ci --no-audit --no-fund
     npm run build
 fi
 
-log "Installing PHP dependencies"
-composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-
-if [[ "${NEW_ENV:-0}" == 1 ]]; then
+if [[ "${NEW_ENV:-0}" == 1 ]] || ! grep -qE '^APP_KEY=.+' .env; then
     php artisan key:generate --force
 fi
 
@@ -136,6 +139,7 @@ done
 grep -qE '^APP_PORTAL_ENABLED=true' .env && echo "WARNING: APP_PORTAL_ENABLED=true; the unfinished portal (login, teams) is public."
 
 trap - ERR
+touch "$FIRST_DONE_MARKER"
 if [[ $STAY_DOWN == 1 || $FIRST == 1 ]]; then
     log "Deployed $(git log -1 --format='%h'). Still in maintenance mode."
     echo "Preview: https://elysiumhospitality.net/$(cat "$SECRET_FILE")"
