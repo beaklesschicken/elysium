@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCurrentOrganization;
 use App\Http\Middleware\EnsurePortalEnabled;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'portal' => EnsurePortalEnabled::class,
+            'organization' => EnsureCurrentOrganization::class,
         ]);
 
         $middleware->prependToPriorityList(

@@ -2,30 +2,77 @@
 
 namespace App\Models;
 
-
-use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\EmployeeStatus;
+use App\Models\Concerns\BelongsToOrganization;
+use Database\Factories\EmployeeFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
+/**
+ * A person whose credentials (and later tips) are tracked. Employees do not log in.
+ */
 class Employee extends Model
 {
-    /** @use HasFactory<\Database\Factories\EmployeeFactory> */
-    use HasFactory;
-    public function organization()
+    /** @use HasFactory<EmployeeFactory> */
+    use BelongsToOrganization, HasFactory;
+
+    protected $fillable = [
+        'organization_id',
+        'name',
+        'email',
+        'phone',
+        'start_date',
+        'birth_date',
+        'status',
+        'notes',
+    ];
+
+    /**
+     * @return array<string, string|class-string>
+     */
+    protected function casts(): array
     {
-        $this->belongsToOne(Organization::class);
+        return [
+            'start_date' => 'date',
+            'birth_date' => 'date',
+            'status' => EmployeeStatus::class,
+        ];
     }
-    public function teams()
+
+    /**
+     * @return BelongsToMany<Unit, $this>
+     */
+    public function units(): BelongsToMany
     {
-        $this->belongsToMany(Team::class);
-    }  
+        return $this->belongsToMany(Unit::class)->withTimestamps();
+    }
+
+    /**
+     * Admins see every employee; managers only employees of the units they manage.
+     *
+     * @param  Builder<Employee>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        if ($user->isOrganizationAdmin()) {
+            return;
+        }
+
+        $query->whereHas('units.managers', fn (Builder $managers) => $managers->whereKey($user->id));
+    }
+
     public function assignCredential($employee_id)
     {
         $employee_id = $employee_id ?: auth()->user;
+
         return $this->assigned()->attach($employee_id);
-    }  
-    public function assigned()
+    }
+
+    public function assigned(): MorphToMany
     {
-        return $this->morphToMany(Credential::class,'assignables')->withTimestamps();
+        return $this->morphToMany(Credential::class, 'assignables')->withTimestamps();
     }
 }

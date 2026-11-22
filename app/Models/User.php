@@ -3,14 +3,18 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Support\Str;
-use Illuminate\Notifications\Notifiable;
+use App\Enums\OrganizationRole;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -58,23 +62,77 @@ class User extends Authenticatable
             ->implode('');
     }
 
-    public function teams()
+    /**
+     * @return BelongsToMany<Organization, $this>
+     */
+    public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class);
+        return $this->belongsToMany(Organization::class)->withPivot('role')->withTimestamps();
     }
 
-    public function organizations()
+    /**
+     * @return BelongsTo<Organization, $this>
+     */
+    public function currentOrganization(): BelongsTo
     {
-        return $this->belongsToMany(Organization::class);
+        return $this->belongsTo(Organization::class, 'current_organization_id');
     }
 
-    public function organization()
+    /**
+     * Units this user manages, across all of their organizations.
+     *
+     * @return BelongsToMany<Unit, $this>
+     */
+    public function managedUnits(): BelongsToMany
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsToMany(Unit::class)->withTimestamps();
     }
-    
-    public function credentials()
+
+    public function roleIn(Organization|int|null $organization): ?OrganizationRole
     {
-        return $this->belongsToMany(Credential::class);
+        $organizationId = $organization instanceof Organization ? $organization->id : $organization;
+
+        if ($organizationId === null) {
+            return null;
+        }
+
+        $role = $this->organizations->firstWhere('id', $organizationId)?->pivot->role;
+
+        return $role === null ? null : OrganizationRole::from($role);
+    }
+
+    public function belongsToOrganization(Organization|int $organization): bool
+    {
+        return $this->roleIn($organization) !== null;
+    }
+
+    public function currentRole(): ?OrganizationRole
+    {
+        return $this->roleIn($this->current_organization_id);
+    }
+
+    /**
+     * Owner or admin of the current organization.
+     */
+    public function isOrganizationAdmin(): bool
+    {
+        return $this->currentRole()?->canManageOrganization() ?? false;
+    }
+
+    public function managesUnit(Unit $unit): bool
+    {
+        return $this->managedUnits()->whereKey($unit->id)->exists();
+    }
+
+    public function switchOrganization(Organization $organization): bool
+    {
+        if (! $this->belongsToOrganization($organization)) {
+            return false;
+        }
+
+        $this->forceFill(['current_organization_id' => $organization->id])->save();
+        $this->setRelation('currentOrganization', $organization);
+
+        return true;
     }
 }

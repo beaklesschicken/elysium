@@ -2,51 +2,44 @@
 
 namespace Database\Seeders;
 
-use App\Models\Team;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
+use App\Enums\OrganizationRole;
 use App\Models\Employee;
 use App\Models\Organization;
+use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * Test User (e@e.com / password) owns "Elysium Hospitality" with three units,
+     * each with a manager and employees. A second organization checks tenant isolation.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $organization = Organization::factory()->create(['name' => 'Elysium Hospitality']);
 
-        User::factory()->create([
+        User::factory()->inOrganization($organization, OrganizationRole::Owner)->create([
             'name' => 'Test User',
             'email' => 'e@e.com',
         ]);
 
-        // Make the first organization
-        $org = Organization::factory()->create(['name' => 'Elysium Hospitality']);
-        // make sure the example user is part of that organization
-        $user = User::find(1)->organizations()->attach(1);
-        // Create 4 more Users and attach them to different organizations
-        User::factory(4)->hasAttached(Organization::factory())->create();
-        // Create a team for each user in the db, and 5 employees for that team
-        $users = User::all();
-        foreach($users as $user) // creating and attaching
-        {
-            $team = Team::factory()->create([
-                        'name' => $user->name ."'s Team",
-                        'description' => "A brief description of ".$user->name."'s team.",
-                        'organization_id' => 1,
-                    ]);
-            // Give the user a team
-            $user->teams()->attach($team->id);
-            // Give the team some employees
-            $emps = Employee::factory(5)->recycle($team)->create([
-                'organization_id' => $team->organization_id,
-            ]);
-            // Attach the employees we just created to the current team
-            $team->employees()->attach($emps);
+        Unit::factory(3)->for($organization)->create()->each(function (Unit $unit) use ($organization): void {
+            $manager = User::factory()->inOrganization($organization, OrganizationRole::Manager)->create();
+            $unit->managers()->attach($manager);
 
-        }
+            $employees = Employee::factory(8)->for($organization)->create();
+            $unit->employees()->attach($employees);
+        });
+
+        $otherOrganization = Organization::factory()->create(['name' => 'Other Hospitality Group']);
+        User::factory()->inOrganization($otherOrganization, OrganizationRole::Owner)->create([
+            'name' => 'Other Owner',
+            'email' => 'other@example.com',
+        ]);
+        $otherUnit = Unit::factory()->for($otherOrganization)->create();
+        $otherUnit->employees()->attach(Employee::factory(5)->for($otherOrganization)->create());
     }
 }

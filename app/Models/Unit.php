@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\BelongsToOrganization;
+use Database\Factories\UnitFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+/**
+ * A location or outlet of an organization (restaurant, bar, venue).
+ */
+class Unit extends Model
+{
+    /** @use HasFactory<UnitFactory> */
+    use BelongsToOrganization, HasFactory;
+
+    protected $fillable = [
+        'organization_id',
+        'name',
+        'description',
+        'address',
+        'city',
+        'state_province',
+        'postcode',
+        'phone',
+    ];
+
+    /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function managers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<Employee, $this>
+     */
+    public function employees(): BelongsToMany
+    {
+        return $this->belongsToMany(Employee::class)->withTimestamps();
+    }
+
+    /**
+     * Admins see every unit; managers only the units they manage.
+     *
+     * @param  Builder<Unit>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        if ($user->isOrganizationAdmin()) {
+            return;
+        }
+
+        $query->whereHas('managers', fn (Builder $managers) => $managers->whereKey($user->id));
+    }
+}

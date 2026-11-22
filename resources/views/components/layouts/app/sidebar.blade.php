@@ -15,28 +15,49 @@
                 <x-app-logo />
             </a>
             
-            <x-command title="Ctl+k to search" />
+            @php
+                $currentUser = auth()->user();
+                $currentOrganization = $currentUser->currentOrganization;
+                $organizations = $currentUser->organizations()->orderBy('name')->get();
+            @endphp
+
+            @if ($currentOrganization)
+                <flux:dropdown position="bottom" align="start">
+                    <flux:button variant="ghost" icon="building-office" icon-trailing="chevrons-up-down" class="w-full justify-start! truncate">
+                        {{ $currentOrganization->name }}
+                    </flux:button>
+
+                    <flux:menu class="w-[240px]">
+                        @foreach ($organizations as $organization)
+                            <form method="POST" action="{{ route('organizations.switch', $organization) }}" class="w-full">
+                                @csrf
+                                <flux:menu.item as="button" type="submit" :icon="$organization->id === $currentOrganization->id ? 'check' : null" class="w-full">
+                                    {{ $organization->name }}
+                                </flux:menu.item>
+                            </form>
+                        @endforeach
+                        <flux:menu.separator />
+                        <flux:menu.item icon="plus" :href="route('organizations.create')" wire:navigate>{{ __('New organization') }}</flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+            @endif
+
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="user-group" :href="route('admin-teams')" :current="request()->routeIs('admin-teams')" wire:navigate>{{ __('Teams') }}</flux:navlist.item>
+                    <flux:navlist.item icon="building-storefront" :href="route('units.index')" :current="request()->routeIs('units.*')" wire:navigate>{{ __('Units') }}</flux:navlist.item>
+                    <flux:navlist.item icon="users" :href="route('employees.index')" :current="request()->routeIs('employees.*')" wire:navigate>{{ __('Employees') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                @if ($currentOrganization && $currentUser->can('manage', $currentOrganization))
+                    <flux:navlist.group :heading="__('Organization')" class="grid">
+                        <flux:navlist.item icon="user-group" :href="route('organization.members')" :current="request()->routeIs('organization.members')" wire:navigate>{{ __('People & access') }}</flux:navlist.item>
+                        <flux:navlist.item icon="cog-6-tooth" :href="route('organization.edit')" :current="request()->routeIs('organization.edit')" wire:navigate>{{ __('Details') }}</flux:navlist.item>
+                    </flux:navlist.group>
+                @endif
             </flux:navlist>
 
             <flux:spacer />
-
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="notepad-text" >
-                    Session
-                </flux:navlist.item>
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
 
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">

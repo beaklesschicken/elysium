@@ -2,11 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Enums\EmployeeStatus;
+use App\Models\Employee;
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Employee>
+ * @extends Factory<Employee>
  */
 class EmployeeFactory extends Factory
 {
@@ -18,11 +20,21 @@ class EmployeeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
             'organization_id' => Organization::factory(),
-            'start_date' => $this->faker->dateTimeBetween('-10 years','-3 weeks'),
-            'birth_date' => $this->faker->dateTimeBetween('-50 years','-16 years'),
-            'notes' => '',
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('317-555-####'),
+            'start_date' => fake()->dateTimeBetween('-10 years', '-3 weeks'),
+            'birth_date' => fake()->dateTimeBetween('-50 years', '-21 years'),
+            'status' => EmployeeStatus::Active,
+            'notes' => null,
         ];
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => EmployeeStatus::Inactive,
+        ]);
     }
 }

@@ -2,39 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Team;
-use App\Models\User;
-use Illuminate\Support\Facades\Session;
+use App\Enums\EmployeeStatus;
+use App\Models\Employee;
+use App\Models\Unit;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request): View
     {
-        $teams = Team::where('organization_id', Session::get('working_org')?->id)
-            ->with(['managers', 'employees'])
-            ->get();
-        // get all the managers
-        $managers = [];
-        $employees = [];
-        foreach ($teams as $team) {
-            foreach ($team->managers as $manager) {
-                array_push($managers,
-                    [
-                        'user_id' => $manager->id,
-                        'name' => $manager->name,
-                    ]);
-            }
-            foreach ($team->employees as $employee) {
-                array_push($employees,
-                    [
-                        'emp_id' => $employee->id,
-                        'name' => $employee->name,
-                    ]);
-            }
-        }
+        $user = $request->user();
+        $organization = $user->currentOrganization;
+        $isAdmin = $user->isOrganizationAdmin();
 
-        $users = User::with('teams')->get();
+        $unitCount = Unit::query()->visibleTo($user)->count();
+        $employeeCount = Employee::query()->visibleTo($user)->where('status', EmployeeStatus::Active)->count();
+        $memberCount = $isAdmin ? $organization->users()->count() : null;
 
-        return view('dashboard', ['users' => $users]);
+        $setupSteps = $isAdmin ? [
+            ['label' => __('Add your first unit'), 'done' => $unitCount > 0, 'route' => route('units.create')],
+            ['label' => __('Invite a unit manager'), 'done' => $memberCount > 1 || $organization->invitations()->exists(), 'route' => route('organization.members')],
+            ['label' => __('Add employees'), 'done' => $employeeCount > 0, 'route' => route('employees.create')],
+        ] : [];
+
+        return view('dashboard', [
+            'organization' => $organization,
+            'unitCount' => $unitCount,
+            'employeeCount' => $employeeCount,
+            'memberCount' => $memberCount,
+            'setupSteps' => collect($setupSteps)->contains('done', false) ? $setupSteps : [],
+        ]);
     }
 }

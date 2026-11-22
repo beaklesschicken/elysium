@@ -18,9 +18,13 @@ it('hides every portal page when the portal is off', function (string $path) {
     'forgot password' => '/forgot-password',
     'reset password' => '/reset-password/some-token',
     'dashboard' => '/dashboard',
-    'teams' => '/teams',
-    'team by id' => '/teams/1',
-    'new team' => '/teams/new',
+    'units' => '/units',
+    'unit by id' => '/units/1',
+    'new unit' => '/units/create',
+    'employees' => '/employees',
+    'members' => '/organization/members',
+    'new organization' => '/organizations/create',
+    'invitation' => '/invitations/some-token',
     'settings' => '/settings/profile',
 ]);
 
@@ -42,9 +46,14 @@ it('sends guests to the login page for protected portal pages', function (string
     $this->get($path)->assertRedirect('/login');
 })->with([
     'dashboard' => '/dashboard',
-    'teams' => '/teams',
-    'team by id' => '/teams/1',
-    'new team' => '/teams/new',
+    'units' => '/units',
+    'unit by id' => '/units/1',
+    'new unit' => '/units/create',
+    'employees' => '/employees',
+    'employee import' => '/employees/import',
+    'members' => '/organization/members',
+    'organization details' => '/organization',
+    'new organization' => '/organizations/create',
     'settings' => '/settings/profile',
 ]);
 
