@@ -66,7 +66,8 @@
                 @forelse ($this->employees as $employee)
                     <li wire:key="employee-{{ $employee->id }}" class="flex items-center justify-between gap-2 py-2">
                         <div class="flex items-center gap-2">
-                            <a href="{{ route('employees.edit', $employee) }}" wire:navigate class="text-sm font-medium text-zinc-900 hover:underline dark:text-white">{{ $employee->name }}</a>
+                            <a href="{{ route('employees.show', $employee) }}" wire:navigate class="text-sm font-medium text-zinc-900 hover:underline dark:text-white">{{ $employee->name }}</a>
+                            <x-credential-status-badge :status="$employee->worstCredentialStatus()" />
                             @if ($employee->status !== App\Enums\EmployeeStatus::Active)
                                 <flux:badge size="sm">{{ $employee->status->label() }}</flux:badge>
                             @endif
@@ -90,4 +91,6 @@
             @endif
         </flux:card>
     </div>
+
+    <livewire:credentials.holder-credentials :holder="$unit" :heading="__('Unit permits & policies')" :key="'unit-credentials-'.$unit->id" />
 </div>

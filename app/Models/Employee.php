@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\Enums\EmployeeStatus;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\HasCredentials;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * A person whose credentials (and later tips) are tracked. Employees do not log in.
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 class Employee extends Model
 {
     /** @use HasFactory<EmployeeFactory> */
-    use BelongsToOrganization, HasFactory;
+    use BelongsToOrganization, HasCredentials, HasFactory;
 
     protected $fillable = [
         'organization_id',
@@ -62,17 +62,5 @@ class Employee extends Model
         }
 
         $query->whereHas('units.managers', fn (Builder $managers) => $managers->whereKey($user->id));
-    }
-
-    public function assignCredential($employee_id)
-    {
-        $employee_id = $employee_id ?: auth()->user;
-
-        return $this->assigned()->attach($employee_id);
-    }
-
-    public function assigned(): MorphToMany
-    {
-        return $this->morphToMany(Credential::class, 'assignables')->withTimestamps();
     }
 }

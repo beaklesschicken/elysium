@@ -146,7 +146,7 @@ class EmployeeForm extends Component
 
         Flux::toast(variant: 'success', text: __(':name saved.', ['name' => $this->employee->name]));
 
-        $this->redirect(route('employees.index', absolute: false), navigate: true);
+        $this->redirect(route('employees.show', $this->employee, absolute: false), navigate: true);
     }
 
     public function delete(): void

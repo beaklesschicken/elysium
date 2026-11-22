@@ -143,6 +143,13 @@ php artisan optimize:clear
 php artisan optimize
 
 
+log "Scheduler (credential reminder emails)"
+SCHEDULE_LINE="* * * * * cd $APP_DIR && php artisan schedule:run >> /dev/null 2>&1"
+if ! crontab -l 2>/dev/null | grep -qF "artisan schedule:run"; then
+    { crontab -l 2>/dev/null || true; echo "$SCHEDULE_LINE"; } | crontab -
+    echo "Added the Laravel scheduler to this user's crontab."
+fi
+
 log "Permissions"
 chmod 600 .env
 chmod -R u+rwX,go= database storage bootstrap/cache

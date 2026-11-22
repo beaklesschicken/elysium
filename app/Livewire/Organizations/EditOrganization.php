@@ -17,12 +17,15 @@ class EditOrganization extends Component
 
     public string $name = '';
 
+    public bool $credentialRemindersEnabled = false;
+
     public function mount(): void
     {
         $organization = $this->organization();
         $this->authorize('manage', $organization);
 
         $this->name = $organization->name;
+        $this->credentialRemindersEnabled = $organization->credential_reminders_enabled;
         $this->fillAddressFrom($organization);
     }
 
@@ -33,6 +36,7 @@ class EditOrganization extends Component
     {
         return [
             'name' => ['required', 'string', 'max:150'],
+            'credentialRemindersEnabled' => ['boolean'],
             ...$this->addressRules(),
         ];
     }
@@ -50,7 +54,11 @@ class EditOrganization extends Component
         $organization = $this->organization();
         $this->authorize('manage', $organization);
 
-        $organization->update($this->normalizeAddress($this->validate()));
+        $validated = $this->normalizeAddress($this->validate());
+        $validated['credential_reminders_enabled'] = $validated['credentialRemindersEnabled'];
+        unset($validated['credentialRemindersEnabled']);
+
+        $organization->update($validated);
 
         Flux::toast(variant: 'success', text: __('Organization details saved.'));
     }

@@ -90,7 +90,7 @@ class Show extends Component
     #[Computed]
     public function employees(): Collection
     {
-        return $this->unit->employees()->orderBy('name')->get();
+        return $this->unit->employees()->with('currentCredentials')->orderBy('name')->get();
     }
 
     /**

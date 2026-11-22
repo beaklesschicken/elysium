@@ -10,6 +10,14 @@
 
         <x-address-fields />
 
+        <flux:separator variant="subtle" />
+
+        <flux:switch
+            wire:model="credentialRemindersEnabled"
+            :label="__('Email expiration reminders')"
+            :description="__('Sends owners, admins and unit managers a summary when credentials are 90, 30 and 7 days from expiring, and when they expire. Off until you turn it on.')"
+            align="left" />
+
         <div>
             <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
         </div>

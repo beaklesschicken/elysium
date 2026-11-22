@@ -105,9 +105,9 @@ Reuses organizations, units and employees from Phase 0.
 ## Order of work
 
 1. ~~Phase 0 cleanup and tenancy, with tests.~~ Done 2026-11-22.
-2. Credentials data model + employee/unit/org screens. ← next
-3. Expiration notifications + dashboard.
-4. Turn the portal on in production (Credentials MVP).
+2. ~~Credentials data model + employee/unit/org screens.~~ Done 2026-11-22.
+3. ~~Expiration notifications + dashboard.~~ Done 2026-11-22. Reminder emails are an organization setting, **off by default**.
+4. Turn the portal on in production (Credentials MVP). ← next
 5. Phase 2 credential features as needed.
 6. Tips: positions, periods, entry grid → rules/engine (after we spec the options) → payroll page.
 
@@ -115,7 +115,7 @@ Reuses organizations, units and employees from Phase 0.
 
 1. ~~Rename `teams` → `units`?~~ Done.
 2. ~~Spatie or simple roles + policies?~~ Simple roles (`owner`, `admin`, `manager`) + policies; Spatie leftovers removed.
-3. Which states do customers operate in? It decides which public credential types to seed first.
-4. Who receives expiration alerts — unit manager, org admins, the employee, or all three?
+3. Which states do customers operate in? The public catalog starts with Indiana entries plus generic ones; validity periods are left blank until confirmed.
+4. ~~Who receives expiration alerts?~~ Owners/admins get everything; unit managers get their units and those units' employees. Opt-in per organization.
 5. Can a manager belong to multiple units / an employee work at multiple units? (Schema allows both.)
 6. Tips: what's entered per shift, which tip-out methods are needed, and what format does payroll need? (Later.)

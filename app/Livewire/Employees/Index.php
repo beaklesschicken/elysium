@@ -69,7 +69,7 @@ class Index extends Component
 
         $employees = Employee::query()
             ->visibleTo($user)
-            ->with('units:units.id,units.name')
+            ->with(['units:units.id,units.name', 'currentCredentials'])
             ->when($this->search !== '', function (Builder $query): void {
                 $term = '%'.trim($this->search).'%';
                 $query->where(fn (Builder $inner) => $inner->where('name', 'like', $term)->orWhere('email', 'like', $term));

@@ -3,17 +3,17 @@
 namespace App\Models;
 
 use App\Enums\OrganizationRole;
+use App\Models\Concerns\HasCredentials;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Organization extends Model
 {
     /** @use HasFactory<OrganizationFactory> */
-    use HasFactory;
+    use HasCredentials, HasFactory;
 
     protected $fillable = [
         'name',
@@ -21,7 +21,25 @@ class Organization extends Model
         'city',
         'state_province',
         'postcode',
+        'credential_reminders_enabled',
     ];
+
+    /**
+     * Days before expiry when reminder emails go out; 0 means on or after the expiry date.
+     *
+     * @var list<int>
+     */
+    public const REMINDER_DAYS = [90, 30, 7, 0];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'credential_reminders_enabled' => 'boolean',
+        ];
+    }
 
     /**
      * @return BelongsToMany<User, $this>
@@ -55,20 +73,16 @@ class Organization extends Model
         return $this->hasMany(Invitation::class);
     }
 
+    /**
+     * @return HasMany<CredentialType, $this>
+     */
+    public function credentialTypes(): HasMany
+    {
+        return $this->hasMany(CredentialType::class);
+    }
+
     public function addMember(User $user, OrganizationRole $role): void
     {
         $this->users()->syncWithoutDetaching([$user->id => ['role' => $role->value]]);
-    }
-
-    public function assignCredential($organization_id)
-    {
-        $organization_id = $organization_id ?: auth()->user;
-
-        return $this->assigned()->attach($organization_id);
-    }
-
-    public function assigned(): MorphToMany
-    {
-        return $this->morphToMany(Credential::class, 'assignables')->withTimestamps();
     }
 }

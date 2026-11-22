@@ -47,6 +47,9 @@
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                     <flux:navlist.item icon="building-storefront" :href="route('units.index')" :current="request()->routeIs('units.*')" wire:navigate>{{ __('Units') }}</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('employees.index')" :current="request()->routeIs('employees.*')" wire:navigate>{{ __('Employees') }}</flux:navlist.item>
+                    <flux:navlist.item icon="identification" :href="route('credentials.index')" :current="request()->routeIs('credentials.index')" wire:navigate>{{ __('Credentials') }}</flux:navlist.item>
+                    <flux:navlist.item icon="building-office" :href="route('organization.permits')" :current="request()->routeIs('organization.permits')" wire:navigate>{{ __('Organization permits') }}</flux:navlist.item>
+                    <flux:navlist.item icon="book-open" :href="route('credentials.types')" :current="request()->routeIs('credentials.types')" wire:navigate>{{ __('Catalog') }}</flux:navlist.item>
                 </flux:navlist.group>
 
                 @if ($currentOrganization && $currentUser->can('manage', $currentOrganization))

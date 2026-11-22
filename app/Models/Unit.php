@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\HasCredentials;
 use Database\Factories\UnitFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Unit extends Model
 {
     /** @use HasFactory<UnitFactory> */
-    use BelongsToOrganization, HasFactory;
+    use BelongsToOrganization, HasCredentials, HasFactory;
 
     protected $fillable = [
         'organization_id',

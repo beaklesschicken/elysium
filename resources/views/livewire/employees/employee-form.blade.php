@@ -34,7 +34,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <flux:button type="submit" variant="primary">{{ $employee ? __('Save') : __('Add employee') }}</flux:button>
-                <flux:button variant="ghost" :href="route('employees.index')" wire:navigate>{{ __('Cancel') }}</flux:button>
+                <flux:button variant="ghost" :href="$employee ? route('employees.show', $employee) : route('employees.index')" wire:navigate>{{ __('Cancel') }}</flux:button>
             </div>
             @if ($employee)
                 @can('delete', $employee)

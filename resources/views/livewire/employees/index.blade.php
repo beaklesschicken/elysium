@@ -31,6 +31,7 @@
         <flux:table bleed :paginate="$employees" pagination:scroll-to>
             <flux:table.columns>
                 <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
+                <flux:table.column>{{ __('Credentials') }}</flux:table.column>
                 <flux:table.column>{{ __('Units') }}</flux:table.column>
                 <flux:table.column class="max-md:hidden">{{ __('Email') }}</flux:table.column>
                 <flux:table.column sortable :sorted="$sortBy === 'start_date'" :direction="$sortDirection" wire:click="sort('start_date')" class="max-md:hidden">{{ __('Started') }}</flux:table.column>
@@ -41,8 +42,9 @@
                 @forelse ($employees as $employee)
                     <flux:table.row :key="$employee->id">
                         <flux:table.cell variant="strong">
-                            <a href="{{ route('employees.edit', $employee) }}" wire:navigate class="hover:underline">{{ $employee->name }}</a>
+                            <a href="{{ route('employees.show', $employee) }}" wire:navigate class="hover:underline">{{ $employee->name }}</a>
                         </flux:table.cell>
+                        <flux:table.cell class="py-0"><x-credential-status-badge :status="$employee->worstCredentialStatus()" empty /></flux:table.cell>
                         <flux:table.cell>{{ $employee->units->pluck('name')->implode(', ') ?: '—' }}</flux:table.cell>
                         <flux:table.cell class="max-md:hidden">{{ $employee->email ?? '—' }}</flux:table.cell>
                         <flux:table.cell class="whitespace-nowrap max-md:hidden">{{ $employee->start_date?->format('M j, Y') ?? '—' }}</flux:table.cell>
@@ -52,7 +54,7 @@
                     </flux:table.row>
                 @empty
                     <flux:table.row>
-                        <flux:table.cell colspan="5" class="py-10 text-center">{{ __('No employees match.') }}</flux:table.cell>
+                        <flux:table.cell colspan="6" class="py-10 text-center">{{ __('No employees match.') }}</flux:table.cell>
                     </flux:table.row>
                 @endforelse
             </flux:table.rows>

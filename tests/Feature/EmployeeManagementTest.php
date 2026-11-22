@@ -23,17 +23,18 @@ beforeEach(function () {
 it('lets admins add an employee to units', function () {
     $this->actingAs($this->admin);
 
-    Livewire::test(EmployeeForm::class)
+    $component = Livewire::test(EmployeeForm::class)
         ->set('name', 'Jamie Pourwell')
         ->set('email', 'jamie@example.com')
         ->set('start_date', '2025-04-01')
         ->set('birth_date', '1998-06-15')
         ->set('unitIds', [(string) $this->managedUnit->id, (string) $this->otherUnit->id])
         ->call('save')
-        ->assertHasNoErrors()
-        ->assertRedirect(route('employees.index', absolute: false));
+        ->assertHasNoErrors();
 
     $employee = Employee::firstWhere('name', 'Jamie Pourwell');
+
+    $component->assertRedirect(route('employees.show', $employee, absolute: false));
 
     expect($employee->organization_id)->toBe($this->organization->id)
         ->and($employee->status)->toBe(EmployeeStatus::Active)

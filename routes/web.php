@@ -1,14 +1,19 @@
 <?php
 
+use App\Http\Controllers\CredentialDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SwitchOrganizationController;
+use App\Livewire\Credentials\Index as CredentialIndex;
+use App\Livewire\Credentials\Types as CredentialTypes;
 use App\Livewire\Employees\EmployeeForm;
 use App\Livewire\Employees\Import as ImportEmployees;
 use App\Livewire\Employees\Index as EmployeeIndex;
+use App\Livewire\Employees\Show as ShowEmployee;
 use App\Livewire\Invitations\AcceptInvitation;
 use App\Livewire\Organizations\CreateOrganization;
 use App\Livewire\Organizations\EditOrganization;
 use App\Livewire\Organizations\Members;
+use App\Livewire\Organizations\Permits;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -45,10 +50,16 @@ Route::middleware('portal')->group(function () {
             Route::get('employees', EmployeeIndex::class)->name('employees.index');
             Route::get('employees/create', EmployeeForm::class)->name('employees.create');
             Route::get('employees/import', ImportEmployees::class)->name('employees.import');
+            Route::get('employees/{employee}', ShowEmployee::class)->name('employees.show');
             Route::get('employees/{employee}/edit', EmployeeForm::class)->name('employees.edit');
+
+            Route::get('credentials', CredentialIndex::class)->name('credentials.index');
+            Route::get('credentials/types', CredentialTypes::class)->name('credentials.types');
+            Route::get('credentials/{credential}/documents/{document}', CredentialDocumentController::class)->name('credentials.documents.show');
 
             Route::get('organization', EditOrganization::class)->name('organization.edit');
             Route::get('organization/members', Members::class)->name('organization.members');
+            Route::get('organization/permits', Permits::class)->name('organization.permits');
         });
     });
 
