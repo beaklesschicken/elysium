@@ -236,7 +236,7 @@
 
         <!-- End Container -->
     </div>
-    @if (Route::has('login'))
+    @if (config('app.portal_enabled'))
     <div class="h-14.5 hidden lg:block"></div>
     @endif
     @LivewireScripts

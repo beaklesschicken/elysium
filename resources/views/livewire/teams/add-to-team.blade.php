@@ -19,7 +19,7 @@
             wire:model.live.debounce='incoming'  
             x-on:change.debounce="userSelected($event)" 
             placeholder="Add employee or manager"/>
-            <flux:button>Add</flux:button>
+            <flux:button type="submit">Add</flux:button>
 
         </div>
         <datalist id="options" name="options" class="mt-2">

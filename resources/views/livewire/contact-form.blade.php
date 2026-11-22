@@ -14,6 +14,10 @@
                 <div class="flex items-center justify-center w-full p-10">
                     <form wire:submit.prevent="contactFormSubmit" action="/contact" method="POST" class="w-full">
                         @csrf
+                        <div class="hidden" aria-hidden="true">
+                            <label for="contact-website">Leave this field empty</label>
+                            <input id="contact-website" type="text" wire:model="website" name="website" tabindex="-1" autocomplete="off" />
+                        </div>
                         <div class="pb-3">
                             @error('email')
                                 <p class="text-red-500 mt-1">{{ $message }}</p>

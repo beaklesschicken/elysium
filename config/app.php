@@ -30,6 +30,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Portal
+    |--------------------------------------------------------------------------
+    |
+    | The logged-in portal (login, registration, dashboard, teams, settings)
+    | is unfinished. It answers 404 unless this is turned on.
+    |
+    */
+
+    'portal_enabled' => (bool) env('APP_PORTAL_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

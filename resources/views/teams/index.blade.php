@@ -22,7 +22,7 @@
 
                 @if($team_id <> 0)
                      {{-- [ ] add employees and managers to this team from here. --}}
-                    @livewire('teams.add-to-team')
+                    @livewire('teams.add-to-team', ['team_id' => $team_id])
                     <div class="grid grid-cols-8 gap-2 border-b p-4 mb-2">
                         <div class="font-semibold col-span-5">Employee</div>
                         <div class="font-semibold justify-self-center" tooltip.top="Permits expiring within 30 days">30 Days</div>
