@@ -4,14 +4,15 @@
         <flux:subheading>{{ __('Your business name and mailing address.') }}</flux:subheading>
     </div>
 
+    <flux:card>
     <form wire:submit="save" class="flex flex-col gap-6">
         <flux:input wire:model="name" :label="__('Organization name')" required />
 
         <x-address-fields />
 
-        <div class="flex items-center gap-4">
+        <div>
             <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
-            <x-action-message on="organization-saved">{{ __('Saved.') }}</x-action-message>
         </div>
     </form>
+    </flux:card>
 </div>

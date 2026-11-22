@@ -4,6 +4,7 @@
         <flux:subheading>{{ __('A restaurant, bar, venue or other location.') }}</flux:subheading>
     </div>
 
+    <flux:card>
     <form wire:submit="save" class="flex flex-col gap-6">
         <flux:input wire:model="name" :label="__('Name')" required autofocus />
         <flux:input wire:model="description" :label="__('Description')" :description="__('Optional, e.g. \'Rooftop bar\'.')" />
@@ -15,4 +16,5 @@
             <flux:button variant="ghost" :href="$unit ? route('units.show', $unit) : route('units.index')" wire:navigate>{{ __('Cancel') }}</flux:button>
         </div>
     </form>
+    </flux:card>
 </div>

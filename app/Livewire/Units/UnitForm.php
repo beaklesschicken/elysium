@@ -4,6 +4,7 @@ namespace App\Livewire\Units;
 
 use App\Livewire\Concerns\HasAddressFields;
 use App\Models\Unit;
+use Flux\Flux;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -74,6 +75,8 @@ class UnitForm extends Component
         } else {
             $unit = Unit::create($validated);
         }
+
+        Flux::toast(variant: 'success', text: __(':name saved.', ['name' => $unit->name]));
 
         $this->redirect(route('units.show', $unit, absolute: false), navigate: true);
     }

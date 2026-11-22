@@ -5,6 +5,7 @@ namespace App\Livewire\Employees;
 use App\Enums\EmployeeStatus;
 use App\Models\Employee;
 use App\Models\Unit;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -143,7 +144,7 @@ class EmployeeForm extends Component
             $this->employee->units()->syncWithoutDetaching($selectedUnitIds);
         });
 
-        session()->flash('status', __(':name saved.', ['name' => $this->employee->name]));
+        Flux::toast(variant: 'success', text: __(':name saved.', ['name' => $this->employee->name]));
 
         $this->redirect(route('employees.index', absolute: false), navigate: true);
     }
@@ -152,7 +153,10 @@ class EmployeeForm extends Component
     {
         $this->authorize('delete', $this->employee);
 
+        $name = $this->employee->name;
         $this->employee->delete();
+
+        Flux::toast(text: __(':name deleted.', ['name' => $name]));
 
         $this->redirect(route('employees.index', absolute: false), navigate: true);
     }

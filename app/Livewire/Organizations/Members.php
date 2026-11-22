@@ -7,6 +7,7 @@ use App\Mail\InvitationMail;
 use App\Models\Invitation;
 use App\Models\Organization;
 use App\Models\Unit;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -90,14 +91,17 @@ class Members extends Component
         Mail::to($email)->send(new InvitationMail($invitation, $organization->name, $inviter->name, $unit?->name, $token));
 
         $this->reset('email', 'unitId');
-        $this->dispatch('invitation-sent');
+
+        Flux::toast(variant: 'success', text: __('Invitation sent to :email.', ['email' => $email]));
     }
 
     public function revokeInvitation(int $invitationId): void
     {
         $this->authorize('manage', $this->organization());
 
-        Invitation::query()->whereKey($invitationId)->whereNull('accepted_at')->delete();
+        if (Invitation::query()->whereKey($invitationId)->whereNull('accepted_at')->delete() > 0) {
+            Flux::toast(text: __('Invitation revoked.'));
+        }
     }
 
     public function changeRole(int $userId, string $newRole): void
@@ -128,6 +132,8 @@ class Members extends Component
         }
 
         $organization->users()->updateExistingPivot($userId, ['role' => $role->value]);
+
+        Flux::toast(variant: 'success', text: __(':name is now :role.', ['name' => $member->name, 'role' => $role->label()]));
     }
 
     public function removeMember(int $userId): void
@@ -161,6 +167,8 @@ class Members extends Component
                 $member->forceFill(['current_organization_id' => null])->save();
             }
         });
+
+        Flux::toast(text: __(':name was removed.', ['name' => $member->name]));
     }
 
     private function ownerCount(Organization $organization): int

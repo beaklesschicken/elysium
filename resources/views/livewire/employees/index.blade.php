@@ -13,53 +13,49 @@
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Search name or email')" />
-        <flux:select wire:model.live="status">
-            <flux:select.option value="all">{{ __('All statuses') }}</flux:select.option>
+        <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Search name or email')" clearable />
+        <flux:select wire:model.live="status" variant="listbox" :prefix="__('Status:')">
+            <flux:select.option value="all">{{ __('All') }}</flux:select.option>
             @foreach ($statuses as $statusOption)
                 <flux:select.option :value="$statusOption->value">{{ $statusOption->label() }}</flux:select.option>
             @endforeach
         </flux:select>
-        <flux:select wire:model.live="unit">
-            <flux:select.option value="">{{ __('All units') }}</flux:select.option>
+        <flux:select wire:model.live="unit" variant="listbox" searchable :placeholder="__('All units')" clearable>
             @foreach ($units as $unitOption)
-                <flux:select.option wire:key="unit-filter-{{ $unitOption->id }}" :value="$unitOption->id">{{ $unitOption->name }}</flux:select.option>
+                <flux:select.option wire:key="unit-filter-{{ $unitOption->id }}" :value="(string) $unitOption->id">{{ $unitOption->name }}</flux:select.option>
             @endforeach
         </flux:select>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
-        <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-700">
-            <thead class="bg-zinc-50 text-left text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
-                <tr>
-                    <th class="px-4 py-3 font-medium">{{ __('Name') }}</th>
-                    <th class="px-4 py-3 font-medium">{{ __('Units') }}</th>
-                    <th class="hidden px-4 py-3 font-medium md:table-cell">{{ __('Email') }}</th>
-                    <th class="hidden px-4 py-3 font-medium md:table-cell">{{ __('Started') }}</th>
-                    <th class="px-4 py-3 font-medium">{{ __('Status') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
-                @forelse ($employees as $employee)
-                    <tr wire:key="employee-{{ $employee->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-700/50">
-                        <td class="px-4 py-3">
-                            <a href="{{ route('employees.edit', $employee) }}" wire:navigate class="font-medium text-zinc-900 hover:underline dark:text-white">{{ $employee->name }}</a>
-                        </td>
-                        <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300">{{ $employee->units->pluck('name')->implode(', ') ?: '—' }}</td>
-                        <td class="hidden px-4 py-3 text-zinc-600 md:table-cell dark:text-zinc-300">{{ $employee->email ?? '—' }}</td>
-                        <td class="hidden px-4 py-3 text-zinc-600 md:table-cell dark:text-zinc-300">{{ $employee->start_date?->format('M j, Y') ?? '—' }}</td>
-                        <td class="px-4 py-3">
-                            <flux:badge size="sm" :color="$employee->status === App\Enums\EmployeeStatus::Active ? 'green' : 'zinc'">{{ $employee->status->label() }}</flux:badge>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-10 text-center text-zinc-500 dark:text-zinc-400">{{ __('No employees match.') }}</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <flux:card>
+        <flux:table bleed :paginate="$employees" pagination:scroll-to>
+            <flux:table.columns>
+                <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
+                <flux:table.column>{{ __('Units') }}</flux:table.column>
+                <flux:table.column class="max-md:hidden">{{ __('Email') }}</flux:table.column>
+                <flux:table.column sortable :sorted="$sortBy === 'start_date'" :direction="$sortDirection" wire:click="sort('start_date')" class="max-md:hidden">{{ __('Started') }}</flux:table.column>
+                <flux:table.column sortable :sorted="$sortBy === 'status'" :direction="$sortDirection" wire:click="sort('status')">{{ __('Status') }}</flux:table.column>
+            </flux:table.columns>
 
-    {{ $employees->links() }}
+            <flux:table.rows>
+                @forelse ($employees as $employee)
+                    <flux:table.row :key="$employee->id">
+                        <flux:table.cell variant="strong">
+                            <a href="{{ route('employees.edit', $employee) }}" wire:navigate class="hover:underline">{{ $employee->name }}</a>
+                        </flux:table.cell>
+                        <flux:table.cell>{{ $employee->units->pluck('name')->implode(', ') ?: '—' }}</flux:table.cell>
+                        <flux:table.cell class="max-md:hidden">{{ $employee->email ?? '—' }}</flux:table.cell>
+                        <flux:table.cell class="whitespace-nowrap max-md:hidden">{{ $employee->start_date?->format('M j, Y') ?? '—' }}</flux:table.cell>
+                        <flux:table.cell class="py-0">
+                            <flux:badge size="sm" :color="$employee->status === App\Enums\EmployeeStatus::Active ? 'green' : 'zinc'">{{ $employee->status->label() }}</flux:badge>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="5" class="py-10 text-center">{{ __('No employees match.') }}</flux:table.cell>
+                    </flux:table.row>
+                @endforelse
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
 </div>

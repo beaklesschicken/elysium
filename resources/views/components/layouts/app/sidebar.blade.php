@@ -156,7 +156,11 @@
         </flux:header>
 
         {{ $slot }}
-        
+
+        @persist('toast')
+            <flux:toast />
+        @endpersist
+
         @fluxScripts
         <script>
             window.toast = function(message, options = {}){

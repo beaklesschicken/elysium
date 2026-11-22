@@ -4,6 +4,7 @@ namespace App\Livewire\Organizations;
 
 use App\Livewire\Concerns\HasAddressFields;
 use App\Models\Organization;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -51,7 +52,7 @@ class EditOrganization extends Component
 
         $organization->update($this->normalizeAddress($this->validate()));
 
-        $this->dispatch('organization-saved');
+        Flux::toast(variant: 'success', text: __('Organization details saved.'));
     }
 
     private function organization(): Organization

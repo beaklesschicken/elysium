@@ -38,12 +38,24 @@
     @endif
 
     <form wire:submit="import" class="flex flex-col gap-6">
-        <flux:input type="file" wire:model="file" :label="__('CSV file')" accept=".csv,text/csv" />
+        <div class="flex flex-col gap-3">
+            <flux:file-upload wire:model="file" :label="__('CSV file')" accept=".csv,text/csv">
+                <flux:file-upload.dropzone :heading="__('Drop a CSV file here or click to browse')" :text="__('Up to 1 MB, 1,000 employees')" with-progress inline />
+            </flux:file-upload>
+
+            @if ($file)
+                <flux:file-item :heading="$file->getClientOriginalName()" :size="$file->getSize()" icon="document-text">
+                    <x-slot name="actions">
+                        <flux:file-item.remove wire:click="$set('file', null)" :aria-label="__('Remove file')" />
+                    </x-slot>
+                </flux:file-item>
+            @endif
+        </div>
 
         @if ($this->assignableUnits->isNotEmpty())
-            <flux:select wire:model="defaultUnit" :label="__('Put employees without a unit column on')" :placeholder="__('No unit')">
+            <flux:select wire:model="defaultUnit" :label="__('Put employees without a unit column on')" variant="listbox" searchable clearable :placeholder="__('No unit')">
                 @foreach ($this->assignableUnits as $unitOption)
-                    <flux:select.option wire:key="default-unit-{{ $unitOption->id }}" :value="$unitOption->id">{{ $unitOption->name }}</flux:select.option>
+                    <flux:select.option wire:key="default-unit-{{ $unitOption->id }}" :value="(string) $unitOption->id">{{ $unitOption->name }}</flux:select.option>
                 @endforeach
             </flux:select>
         @endif

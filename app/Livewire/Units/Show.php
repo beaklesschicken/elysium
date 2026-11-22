@@ -5,6 +5,7 @@ namespace App\Livewire\Units;
 use App\Models\Employee;
 use App\Models\Unit;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -39,6 +40,8 @@ class Show extends Component
         $this->unit->managers()->syncWithoutDetaching([(int) $this->managerToAdd]);
         $this->reset('managerToAdd');
         $this->clearCaches();
+
+        Flux::toast(variant: 'success', text: __('Manager added.'));
     }
 
     public function removeManager(int $userId): void
@@ -60,6 +63,8 @@ class Show extends Component
         $this->unit->employees()->syncWithoutDetaching([(int) $this->employeeToAdd]);
         $this->reset('employeeToAdd');
         $this->clearCaches();
+
+        Flux::toast(variant: 'success', text: __('Employee added to :unit.', ['unit' => $this->unit->name]));
     }
 
     public function removeEmployee(int $employeeId): void

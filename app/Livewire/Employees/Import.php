@@ -4,6 +4,7 @@ namespace App\Livewire\Employees;
 
 use App\Models\Employee;
 use App\Models\Unit;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -136,6 +137,8 @@ class Import extends Component
 
         $this->importedCount = count($prepared);
         $this->reset('file');
+
+        Flux::toast(variant: 'success', text: trans_choice('Imported :count employee.|Imported :count employees.', $this->importedCount));
     }
 
     /**

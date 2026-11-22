@@ -4,28 +4,29 @@
         <flux:heading size="xl" level="1" class="mt-2">{{ $employee ? $employee->name : __('New employee') }}</flux:heading>
     </div>
 
+    <flux:card>
     <form wire:submit="save" class="flex flex-col gap-6">
         <flux:input wire:model="name" :label="__('Full name')" required autofocus />
 
         <div class="grid gap-6 sm:grid-cols-2">
             <flux:input wire:model="email" :label="__('Email')" type="email" />
             <flux:input wire:model="phone" :label="__('Phone')" type="tel" />
-            <flux:input wire:model="start_date" :label="__('Start date')" type="date" />
-            <flux:input wire:model="birth_date" :label="__('Birth date')" type="date" :description="__('Used for age-restricted service rules.')" />
+            <flux:date-picker wire:model="start_date" :label="__('Start date')" clearable with-today />
+            <flux:date-picker wire:model="birth_date" :label="__('Birth date')" selectable-header clearable :description:trailing="__('Used for age-restricted service rules.')" />
         </div>
 
-        <flux:select wire:model="status" :label="__('Status')">
+        <flux:radio.group wire:model="status" :label="__('Status')" variant="segmented" class="max-w-xs">
             @foreach ($statuses as $statusOption)
-                <flux:select.option :value="$statusOption->value">{{ $statusOption->label() }}</flux:select.option>
+                <flux:radio :value="$statusOption->value" :label="$statusOption->label()" />
             @endforeach
-        </flux:select>
+        </flux:radio.group>
 
         @if ($this->assignableUnits->isNotEmpty())
-            <flux:checkbox.group wire:model="unitIds" :label="__('Units')">
+            <flux:select wire:model="unitIds" :label="__('Units')" variant="listbox" multiple searchable indicator="checkbox" :placeholder="__('Choose units...')" :selected-suffix="__('units')">
                 @foreach ($this->assignableUnits as $unitOption)
-                    <flux:checkbox wire:key="unit-option-{{ $unitOption->id }}" :value="(string) $unitOption->id" :label="$unitOption->name" />
+                    <flux:select.option wire:key="unit-option-{{ $unitOption->id }}" :value="(string) $unitOption->id">{{ $unitOption->name }}</flux:select.option>
                 @endforeach
-            </flux:checkbox.group>
+            </flux:select>
         @endif
 
         <flux:textarea wire:model="notes" :label="__('Notes')" rows="3" />
@@ -42,4 +43,5 @@
             @endif
         </div>
     </form>
+    </flux:card>
 </div>

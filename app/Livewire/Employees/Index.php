@@ -27,6 +27,30 @@ class Index extends Component
     #[Url(except: '')]
     public string $unit = '';
 
+    public const SORTABLE = ['name', 'start_date', 'status'];
+
+    #[Url(except: 'name')]
+    public string $sortBy = 'name';
+
+    #[Url(except: 'asc')]
+    public string $sortDirection = 'asc';
+
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', Employee::class);
@@ -52,7 +76,8 @@ class Index extends Component
             })
             ->when(EmployeeStatus::tryFrom($this->status), fn (Builder $query, EmployeeStatus $status) => $query->where('status', $status))
             ->when($this->unit !== '', fn (Builder $query) => $query->whereHas('units', fn (Builder $units) => $units->whereKey((int) $this->unit)))
-            ->orderBy('name')
+            ->orderBy(in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'name', $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->orderBy('id')
             ->paginate(25);
 
         return view('livewire.employees.index', [

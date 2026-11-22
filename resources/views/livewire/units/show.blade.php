@@ -13,8 +13,10 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        <section class="flex flex-col gap-4 rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:heading size="lg">{{ __('Managers') }}</flux:heading>
+        <flux:card class="flex flex-col gap-4">
+            <flux:card.header>
+                <flux:card.heading size="lg">{{ __('Managers') }}</flux:card.heading>
+            </flux:card.header>
 
             <ul class="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-700">
                 @forelse ($this->managers as $manager)
@@ -34,10 +36,10 @@
 
             @can('update', $unit)
                 @if ($this->availableManagers->isNotEmpty())
-                    <form wire:submit="addManager" class="flex items-end gap-2">
-                        <flux:select wire:model="managerToAdd" :label="__('Add a manager')" :placeholder="__('Choose a person...')">
+                    <form wire:submit="addManager" class="flex items-end gap-2 [&>[data-flux-field]]:flex-1">
+                        <flux:select wire:model="managerToAdd" :label="__('Add a manager')" variant="listbox" searchable :placeholder="__('Choose a person...')">
                             @foreach ($this->availableManagers as $person)
-                                <flux:select.option wire:key="available-manager-{{ $person->id }}" :value="$person->id">{{ $person->name }}</flux:select.option>
+                                <flux:select.option wire:key="available-manager-{{ $person->id }}" :value="(string) $person->id" :description="$person->email">{{ $person->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
                         <flux:button type="submit">{{ __('Add') }}</flux:button>
@@ -48,15 +50,17 @@
                     <flux:link :href="route('organization.members')" wire:navigate>{{ __('Invite someone') }}</flux:link>
                 </flux:text>
             @endcan
-        </section>
+        </flux:card>
 
-        <section class="flex flex-col gap-4 rounded-xl border border-zinc-200 p-5 lg:col-span-2 dark:border-zinc-700">
-            <div class="flex items-center justify-between gap-2">
-                <flux:heading size="lg">{{ __('Employees') }} <span class="text-zinc-400">({{ $this->employees->count() }})</span></flux:heading>
+        <flux:card class="flex flex-col gap-4 lg:col-span-2">
+            <flux:card.header>
+                <flux:card.heading size="lg">{{ __('Employees') }} <span class="text-zinc-400">({{ $this->employees->count() }})</span></flux:card.heading>
                 @can('create', App\Models\Employee::class)
-                    <flux:button size="sm" icon="plus" :href="route('employees.create', ['unit' => $unit->id])" wire:navigate>{{ __('New employee') }}</flux:button>
+                    <flux:card.actions>
+                        <flux:button size="sm" icon="plus" :href="route('employees.create', ['unit' => $unit->id])" wire:navigate>{{ __('New employee') }}</flux:button>
+                    </flux:card.actions>
                 @endcan
-            </div>
+            </flux:card.header>
 
             <ul class="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-700">
                 @forelse ($this->employees as $employee)
@@ -75,15 +79,15 @@
             </ul>
 
             @if ($this->availableEmployees->isNotEmpty())
-                <form wire:submit="addEmployee" class="flex items-end gap-2">
-                    <flux:select wire:model="employeeToAdd" :label="__('Add an existing employee')" :placeholder="__('Choose an employee...')">
+                <form wire:submit="addEmployee" class="flex items-end gap-2 [&>[data-flux-field]]:flex-1">
+                    <flux:select wire:model="employeeToAdd" :label="__('Add an existing employee')" variant="listbox" searchable :placeholder="__('Choose an employee...')">
                         @foreach ($this->availableEmployees as $candidate)
-                            <flux:select.option wire:key="available-employee-{{ $candidate->id }}" :value="$candidate->id">{{ $candidate->name }}</flux:select.option>
+                            <flux:select.option wire:key="available-employee-{{ $candidate->id }}" :value="(string) $candidate->id" :keywords="$candidate->email">{{ $candidate->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
                     <flux:button type="submit">{{ __('Add') }}</flux:button>
                 </form>
             @endif
-        </section>
+        </flux:card>
     </div>
 </div>

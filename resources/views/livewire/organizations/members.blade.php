@@ -5,83 +5,129 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        <section class="flex flex-col gap-4 lg:col-span-2">
+        <div class="flex flex-col gap-6 lg:col-span-2">
             @error('members')
                 <flux:callout icon="exclamation-triangle" color="red" :heading="$message" />
             @enderror
 
-            <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
-                <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-700">
-                    <thead class="bg-zinc-50 text-left text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">{{ __('Name') }}</th>
-                            <th class="px-4 py-3 font-medium">{{ __('Role') }}</th>
-                            <th class="hidden px-4 py-3 font-medium md:table-cell">{{ __('Manages') }}</th>
-                            <th class="px-4 py-3"><span class="sr-only">{{ __('Actions') }}</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+            <flux:card>
+                <flux:table bleed>
+                    <flux:table.columns>
+                        <flux:table.column>{{ __('Name') }}</flux:table.column>
+                        <flux:table.column>{{ __('Role') }}</flux:table.column>
+                        <flux:table.column class="max-md:hidden">{{ __('Manages') }}</flux:table.column>
+                        <flux:table.column align="end"><span class="sr-only">{{ __('Actions') }}</span></flux:table.column>
+                    </flux:table.columns>
+
+                    <flux:table.rows>
                         @foreach ($members as $member)
                             @php($memberRole = App\Enums\OrganizationRole::from($member->pivot->role))
-                            <tr wire:key="member-{{ $member->id }}">
-                                <td class="px-4 py-3">
-                                    <div class="font-medium text-zinc-900 dark:text-white">{{ $member->name }}</div>
-                                    <div class="text-zinc-500 dark:text-zinc-400">{{ $member->email }}</div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    @if ($member->id === auth()->id() || ($memberRole === App\Enums\OrganizationRole::Owner && $actingRole !== App\Enums\OrganizationRole::Owner))
+                            @php($roleLocked = $member->id === auth()->id() || ($memberRole === App\Enums\OrganizationRole::Owner && $actingRole !== App\Enums\OrganizationRole::Owner))
+                            <flux:table.row :key="$member->id">
+                                <flux:table.cell>
+                                    <div class="flex items-center gap-3">
+                                        <flux:avatar size="sm" :name="$member->name" color="auto" />
+                                        <div>
+                                            <div class="font-medium text-zinc-800 dark:text-white">{{ $member->name }}</div>
+                                            <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ $member->email }}</div>
+                                        </div>
+                                    </div>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    @if ($roleLocked)
                                         <flux:badge size="sm">{{ $memberRole->label() }}</flux:badge>
                                     @else
-                                        <flux:select size="sm" wire:change="changeRole({{ $member->id }}, $event.target.value)" :aria-label="__('Role for :name', ['name' => $member->name])">
-                                            @foreach ($roles as $roleOption)
-                                                @continue($roleOption === App\Enums\OrganizationRole::Owner && $actingRole !== App\Enums\OrganizationRole::Owner)
-                                                <flux:select.option :value="$roleOption->value" :selected="$roleOption === $memberRole">{{ $roleOption->label() }}</flux:select.option>
-                                            @endforeach
-                                        </flux:select>
+                                        <flux:dropdown>
+                                            <flux:button size="sm" variant="ghost" icon:trailing="chevron-down">{{ $memberRole->label() }}</flux:button>
+                                            <flux:menu>
+                                                @foreach ($roles as $roleOption)
+                                                    @continue($roleOption === App\Enums\OrganizationRole::Owner && $actingRole !== App\Enums\OrganizationRole::Owner)
+                                                    <flux:menu.item
+                                                        wire:click="changeRole({{ $member->id }}, '{{ $roleOption->value }}')"
+                                                        :icon="$roleOption === $memberRole ? 'check' : null"
+                                                        :disabled="$roleOption === $memberRole">
+                                                        {{ $roleOption->label() }}
+                                                    </flux:menu.item>
+                                                @endforeach
+                                            </flux:menu>
+                                        </flux:dropdown>
                                     @endif
-                                </td>
-                                <td class="hidden px-4 py-3 text-zinc-600 md:table-cell dark:text-zinc-300">
+                                </flux:table.cell>
+                                <flux:table.cell class="max-md:hidden">
                                     {{ $member->managedUnits->pluck('name')->implode(', ') ?: '—' }}
-                                </td>
-                                <td class="px-4 py-3 text-right">
+                                </flux:table.cell>
+                                <flux:table.cell align="end">
                                     @if ($member->id !== auth()->id())
-                                        <flux:button size="sm" variant="ghost" icon="trash" wire:click="removeMember({{ $member->id }})" wire:confirm="{{ __('Remove :name from the organization? They will lose access immediately.', ['name' => $member->name]) }}" :aria-label="__('Remove')" />
+                                        <flux:modal.trigger :name="'remove-member-'.$member->id">
+                                            <flux:button size="sm" variant="ghost" icon="trash" :aria-label="__('Remove')" />
+                                        </flux:modal.trigger>
+
+                                        <flux:modal :name="'remove-member-'.$member->id" class="min-w-[22rem] text-start">
+                                            <div class="flex flex-col gap-6">
+                                                <div>
+                                                    <flux:heading size="lg">{{ __('Remove :name?', ['name' => $member->name]) }}</flux:heading>
+                                                    <flux:text class="mt-2">{{ __('They lose access to this organization immediately. You can invite them again later.') }}</flux:text>
+                                                </div>
+                                                <div class="flex gap-2">
+                                                    <flux:spacer />
+                                                    <flux:modal.close>
+                                                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                                                    </flux:modal.close>
+                                                    <flux:button variant="danger" wire:click="removeMember({{ $member->id }})" x-on:click="$flux.modal('remove-member-{{ $member->id }}').close()">{{ __('Remove') }}</flux:button>
+                                                </div>
+                                            </div>
+                                        </flux:modal>
                                     @endif
-                                </td>
-                            </tr>
+                                </flux:table.cell>
+                            </flux:table.row>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    </flux:table.rows>
+                </flux:table>
+            </flux:card>
 
             @if ($invitations->isNotEmpty())
-                <flux:heading size="lg" class="mt-2">{{ __('Pending invitations') }}</flux:heading>
-                <ul class="flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
-                    @foreach ($invitations as $invitation)
-                        <li wire:key="invitation-{{ $invitation->id }}" class="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                            <div>
-                                <div class="font-medium text-zinc-900 dark:text-white">{{ $invitation->email }}</div>
-                                <div class="text-zinc-500 dark:text-zinc-400">
-                                    {{ $invitation->role->label() }}{{ $invitation->unit ? ' · '.$invitation->unit->name : '' }}
-                                    · {{ __('expires :date', ['date' => $invitation->expires_at->format('M j')]) }}
-                                </div>
-                            </div>
-                            <flux:button size="sm" variant="ghost" wire:click="revokeInvitation({{ $invitation->id }})">{{ __('Revoke') }}</flux:button>
-                        </li>
-                    @endforeach
-                </ul>
+                <flux:card>
+                    <flux:card.header>
+                        <flux:card.heading size="lg">{{ __('Pending invitations') }}</flux:card.heading>
+                    </flux:card.header>
+                    <flux:table bleed>
+                        <flux:table.rows>
+                            @foreach ($invitations as $invitation)
+                                <flux:table.row :key="$invitation->id">
+                                    <flux:table.cell>
+                                        <div class="font-medium text-zinc-800 dark:text-white">{{ $invitation->email }}</div>
+                                        <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                            {{ $invitation->role->label() }}{{ $invitation->unit ? ' · '.$invitation->unit->name : '' }}
+                                            · {{ __('expires :date', ['date' => $invitation->expires_at->format('M j')]) }}
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <flux:button size="sm" variant="ghost" wire:click="revokeInvitation({{ $invitation->id }})">{{ __('Revoke') }}</flux:button>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </flux:card>
             @endif
-        </section>
+        </div>
 
-        <section class="flex h-fit flex-col gap-4 rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-            <flux:heading size="lg">{{ __('Invite someone') }}</flux:heading>
+        <flux:card class="h-fit">
+            <flux:card.header>
+                <flux:card.heading size="lg">{{ __('Invite someone') }}</flux:card.heading>
+            </flux:card.header>
             <form wire:submit="invite" class="flex flex-col gap-4">
                 <flux:input wire:model="email" type="email" :label="__('Email')" required />
-                <flux:select wire:model.live="role" :label="__('Role')">
+
+                <flux:radio.group wire:model.live="role" :label="__('Role')" variant="cards" class="flex-col">
                     @foreach ($invitableRoles as $roleOption)
-                        <flux:select.option :value="$roleOption->value">{{ $roleOption->label() }}</flux:select.option>
+                        <flux:radio
+                            :value="$roleOption->value"
+                            :label="$roleOption->label()"
+                            :description="$roleOption === App\Enums\OrganizationRole::Admin ? __('Manages everything in the organization.') : __('Sees and manages their own unit.')" />
                     @endforeach
-                </flux:select>
+                </flux:radio.group>
+
                 @if ($role === App\Enums\OrganizationRole::Manager->value)
                     @if ($units->isEmpty())
                         <flux:text>
@@ -89,18 +135,18 @@
                             <flux:link :href="route('units.create')" wire:navigate>{{ __('New unit') }}</flux:link>
                         </flux:text>
                     @else
-                        <flux:select wire:model="unitId" :label="__('Unit')" :placeholder="__('Choose a unit...')">
+                        <flux:select wire:model="unitId" :label="__('Unit')" variant="listbox" searchable :placeholder="__('Choose a unit...')">
                             @foreach ($units as $unitOption)
-                                <flux:select.option wire:key="invite-unit-{{ $unitOption->id }}" :value="$unitOption->id">{{ $unitOption->name }}</flux:select.option>
+                                <flux:select.option wire:key="invite-unit-{{ $unitOption->id }}" :value="(string) $unitOption->id">{{ $unitOption->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
                     @endif
                 @endif
-                <div class="flex items-center gap-4">
+
+                <div>
                     <flux:button type="submit" variant="primary" icon="envelope">{{ __('Send invitation') }}</flux:button>
-                    <x-action-message on="invitation-sent">{{ __('Sent.') }}</x-action-message>
                 </div>
             </form>
-        </section>
+        </flux:card>
     </div>
 </div>
