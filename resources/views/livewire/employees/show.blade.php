@@ -5,6 +5,9 @@
             <div class="mt-2 flex items-center gap-3">
                 <flux:heading size="xl" level="1">{{ $employee->name }}</flux:heading>
                 <flux:badge size="sm" :color="$employee->status === App\Enums\EmployeeStatus::Active ? 'green' : 'zinc'">{{ $employee->status->label() }}</flux:badge>
+                @if ($portalRole = $employee->portalRole())
+                    <flux:badge size="sm" color="indigo" icon="key">{{ $portalRole->label() }}</flux:badge>
+                @endif
             </div>
             <flux:subheading>
                 {{ collect([$employee->email, $employee->phone, $employee->start_date ? __('Started :date', ['date' => $employee->start_date->format('M j, Y')]) : null])->filter()->implode(' · ') }}

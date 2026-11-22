@@ -1,7 +1,7 @@
 <div class="flex w-full flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('People & access') }}</flux:heading>
-        <flux:subheading>{{ __('Who can log in. Owners and admins manage everything; unit managers see only their units.') }}</flux:subheading>
+        <flux:subheading>{{ __('Who can log in. Owners and admins manage everything; unit managers see only their units. Anyone who also needs their own credentials tracked can be added to the employee list.') }}</flux:subheading>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
@@ -16,6 +16,7 @@
                         <flux:table.column>{{ __('Name') }}</flux:table.column>
                         <flux:table.column>{{ __('Role') }}</flux:table.column>
                         <flux:table.column class="max-md:hidden">{{ __('Manages') }}</flux:table.column>
+                        <flux:table.column>{{ __('Own credentials') }}</flux:table.column>
                         <flux:table.column align="end"><span class="sr-only">{{ __('Actions') }}</span></flux:table.column>
                     </flux:table.columns>
 
@@ -55,6 +56,15 @@
                                 </flux:table.cell>
                                 <flux:table.cell class="max-md:hidden">
                                     {{ $member->managedUnits->pluck('name')->implode(', ') ?: '—' }}
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    @if ($employeeIdsByUser->has($member->id))
+                                        <flux:link :href="route('employees.show', $employeeIdsByUser->get($member->id))" wire:navigate class="text-sm">{{ __('View') }}</flux:link>
+                                    @else
+                                        <flux:tooltip :content="__('Add to the employee list so their own permits and certificates are tracked.')">
+                                            <flux:button size="sm" variant="ghost" icon="plus" wire:click="trackAsEmployee({{ $member->id }})">{{ __('Track') }}</flux:button>
+                                        </flux:tooltip>
+                                    @endif
                                 </flux:table.cell>
                                 <flux:table.cell align="end">
                                     @if ($member->id !== auth()->id())

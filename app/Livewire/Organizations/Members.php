@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Organizations;
 
+use App\Enums\EmployeeStatus;
 use App\Enums\OrganizationRole;
 use App\Mail\InvitationMail;
+use App\Models\Employee;
 use App\Models\Invitation;
 use App\Models\Organization;
 use App\Models\Unit;
@@ -171,6 +173,47 @@ class Members extends Component
         Flux::toast(text: __(':name was removed.', ['name' => $member->name]));
     }
 
+    /**
+     * Puts a member on the employee list so their own credentials are tracked. Links an existing
+     * employee with the same email if there is one; managers are added to the units they manage.
+     */
+    public function trackAsEmployee(int $userId): void
+    {
+        $organization = $this->organization();
+        $this->authorize('manage', $organization);
+
+        $member = $organization->users()->whereKey($userId)->first();
+
+        if ($member === null) {
+            return;
+        }
+
+        $employee = DB::transaction(function () use ($member): Employee {
+            $existing = Employee::query()->where('user_id', $member->id)->first()
+                ?? Employee::query()->whereNull('user_id')->where('email', $member->email)->first();
+
+            if ($existing !== null) {
+                $existing->forceFill(['user_id' => $member->id])->save();
+
+                return $existing;
+            }
+
+            $employee = new Employee([
+                'name' => $member->name,
+                'email' => $member->email,
+                'status' => EmployeeStatus::Active,
+            ]);
+            $employee->forceFill(['user_id' => $member->id])->save();
+            $employee->units()->attach($member->managedUnits()->whereIn('units.id', Unit::query()->select('id'))->pluck('units.id'));
+
+            return $employee;
+        });
+
+        Flux::toast(variant: 'success', text: __(':name is on the employee list.', ['name' => $member->name]));
+
+        $this->redirect(route('employees.show', $employee, absolute: false), navigate: true);
+    }
+
     private function ownerCount(Organization $organization): int
     {
         return $organization->users()->wherePivot('role', OrganizationRole::Owner->value)->count();
@@ -187,6 +230,7 @@ class Members extends Component
 
         return view('livewire.organizations.members', [
             'members' => $organization->users()->with('managedUnits:units.id,units.name')->orderBy('name')->get(),
+            'employeeIdsByUser' => Employee::query()->whereNotNull('user_id')->pluck('id', 'user_id'),
             'invitations' => Invitation::query()->pending()->with('unit:id,name')->latest()->get(),
             'units' => Unit::query()->orderBy('name')->get(['id', 'name']),
             'roles' => OrganizationRole::cases(),

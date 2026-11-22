@@ -42,7 +42,12 @@
                 @forelse ($employees as $employee)
                     <flux:table.row :key="$employee->id">
                         <flux:table.cell variant="strong">
-                            <a href="{{ route('employees.show', $employee) }}" wire:navigate class="hover:underline">{{ $employee->name }}</a>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('employees.show', $employee) }}" wire:navigate class="hover:underline">{{ $employee->name }}</a>
+                                @if ($portalRole = $employee->portalRole())
+                                    <flux:badge size="sm" color="indigo" inset="top bottom">{{ $portalRole->label() }}</flux:badge>
+                                @endif
+                            </div>
                         </flux:table.cell>
                         <flux:table.cell class="py-0"><x-credential-status-badge :status="$employee->worstCredentialStatus()" empty /></flux:table.cell>
                         <flux:table.cell>{{ $employee->units->pluck('name')->implode(', ') ?: '—' }}</flux:table.cell>

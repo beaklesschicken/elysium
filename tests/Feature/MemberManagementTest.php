@@ -2,6 +2,7 @@
 
 use App\Enums\OrganizationRole;
 use App\Livewire\Organizations\Members;
+use App\Models\Employee;
 use App\Models\Organization;
 use App\Models\Unit;
 use App\Models\User;
@@ -91,6 +92,60 @@ it('ignores people from other organizations', function () {
 });
 
 it('blocks managers from member actions', function () {
+    $this->actingAs($this->manager);
+
+    Livewire::test(Members::class)->assertForbidden();
+});
+
+it('puts a member on the employee list to track their own credentials', function () {
+    $this->actingAs($this->owner);
+
+    Livewire::test(Members::class)
+        ->call('trackAsEmployee', $this->owner->id)
+        ->assertRedirect();
+
+    $employee = Employee::query()->where('user_id', $this->owner->id)->sole();
+
+    expect($employee->name)->toBe($this->owner->name)
+        ->and($employee->email)->toBe($this->owner->email)
+        ->and($employee->organization_id)->toBe($this->organization->id)
+        ->and($employee->portalRole())->toBe(OrganizationRole::Owner);
+
+    $this->get(route('employees.index'))->assertOk()->assertSee($this->owner->name)->assertSee('Owner');
+});
+
+it('adds a tracked manager to the units they manage', function () {
+    $unit = Unit::factory()->for($this->organization)->create();
+    $unit->managers()->attach($this->manager);
+    $this->actingAs($this->admin);
+
+    Livewire::test(Members::class)->call('trackAsEmployee', $this->manager->id);
+
+    $employee = Employee::query()->where('user_id', $this->manager->id)->sole();
+    expect($employee->units->modelKeys())->toBe([$unit->id]);
+});
+
+it('links an existing employee with the same email instead of duplicating', function () {
+    $existing = Employee::factory()->for($this->organization)->create(['email' => $this->admin->email]);
+    $this->actingAs($this->owner);
+
+    Livewire::test(Members::class)->call('trackAsEmployee', $this->admin->id);
+    Livewire::test(Members::class)->call('trackAsEmployee', $this->admin->id);
+
+    expect($existing->fresh()->user_id)->toBe($this->admin->id)
+        ->and(Employee::query()->where('user_id', $this->admin->id)->count())->toBe(1);
+});
+
+it('does not track people outside the organization', function () {
+    $outsider = User::factory()->inOrganization(Organization::factory()->create(), OrganizationRole::Owner)->create();
+    $this->actingAs($this->owner);
+
+    Livewire::test(Members::class)->call('trackAsEmployee', $outsider->id);
+
+    expect(Employee::query()->where('user_id', $outsider->id)->exists())->toBeFalse();
+});
+
+it('does not let managers track members', function () {
     $this->actingAs($this->manager);
 
     Livewire::test(Members::class)->assertForbidden();
