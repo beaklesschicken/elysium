@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Makes sure the signed-in user has a current organization they still belong to.
- * Falls back to their first organization, or sends them to create one.
+ * Falls back to their first organization; otherwise site admins go create one and
+ * everyone else sees that they're waiting for an invitation.
  */
 class EnsureCurrentOrganization
 {
@@ -24,7 +25,7 @@ class EnsureCurrentOrganization
             $firstOrganization = $user->organizations()->orderBy('organizations.id')->first();
 
             if ($firstOrganization === null) {
-                return redirect()->route('organizations.create');
+                return redirect()->route($user->isSiteAdmin() ? 'organizations.create' : 'organizations.none');
             }
 
             $user->switchOrganization($firstOrganization);

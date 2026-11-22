@@ -26,6 +26,8 @@ class Register extends Component
      */
     public function register(): void
     {
+        abort_unless(config('app.registration_open'), 404);
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -38,11 +40,9 @@ class Register extends Component
 
         Auth::login($user);
 
-        /* check to make sure this user is not already linked to any organizations. If 
+        /* check to make sure this user is not already linked to any organizations. If
         *  if so, redirect them to the dashboard.
         */
-
-
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }

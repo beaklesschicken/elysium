@@ -59,6 +59,7 @@ it('sends guests to the login page for protected portal pages', function (string
     'members' => '/organization/members',
     'organization details' => '/organization',
     'new organization' => '/organizations/create',
+    'no organization' => '/organizations/none',
     'settings' => '/settings/profile',
 ]);
 

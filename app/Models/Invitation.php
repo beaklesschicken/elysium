@@ -110,6 +110,7 @@ class Invitation extends Model
 
     /**
      * Adds the user to the organization (and unit), keeping any higher role they already hold.
+     * Opening the emailed link proves the address, so it also counts as email verification.
      */
     public function accept(User $user): void
     {
@@ -126,7 +127,10 @@ class Invitation extends Model
             }
 
             $this->forceFill(['accepted_at' => now()])->save();
-            $user->forceFill(['current_organization_id' => $organization->id])->save();
+            $user->forceFill([
+                'current_organization_id' => $organization->id,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ])->save();
             $user->unsetRelation('organizations');
         });
     }

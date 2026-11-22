@@ -4,9 +4,14 @@ namespace App\Livewire\Organizations;
 
 use App\Enums\OrganizationRole;
 use App\Livewire\Concerns\HasAddressFields;
+use App\Mail\InvitationMail;
+use App\Models\Invitation;
 use App\Models\Organization;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -20,6 +25,14 @@ class CreateOrganization extends Component
 
     public string $name = '';
 
+    /** Who will own it. Empty means the site admin creating it. */
+    public string $ownerEmail = '';
+
+    public function mount(): void
+    {
+        $this->authorize('create', Organization::class);
+    }
+
     /**
      * @return array<string, array<int, string>>
      */
@@ -27,6 +40,7 @@ class CreateOrganization extends Component
     {
         return [
             'name' => ['required', 'string', 'max:150'],
+            'ownerEmail' => ['nullable', 'string', 'email:rfc', 'max:150'],
             ...$this->addressRules(),
         ];
     }
@@ -41,15 +55,35 @@ class CreateOrganization extends Component
 
     public function save(): void
     {
+        $this->authorize('create', Organization::class);
+
         $validated = $this->normalizeAddress($this->validate());
+        $ownerEmail = Str::lower(trim($validated['ownerEmail'] ?? ''));
+        unset($validated['ownerEmail']);
         $user = Auth::user();
+        $ownsIt = $ownerEmail === '' || $ownerEmail === Str::lower($user->email);
 
-        $organization = DB::transaction(function () use ($validated, $user): Organization {
+        [$organization, $invitation, $token] = DB::transaction(function () use ($validated, $user, $ownsIt, $ownerEmail): array {
             $organization = Organization::create($validated);
-            $organization->addMember($user, OrganizationRole::Owner);
 
-            return $organization;
+            if ($ownsIt) {
+                $organization->addMember($user, OrganizationRole::Owner);
+
+                return [$organization, null, null];
+            }
+
+            [$invitation, $token] = Invitation::issue($organization, $ownerEmail, OrganizationRole::Owner, null, $user);
+
+            return [$organization, $invitation, $token];
         });
+
+        if ($invitation !== null) {
+            Mail::to($invitation->email)->send(new InvitationMail($invitation, $organization->name, $user->name, null, $token));
+            Flux::toast(variant: 'success', text: __(':organization created. Invitation sent to :email.', ['organization' => $organization->name, 'email' => $invitation->email]));
+            $this->reset('name', 'ownerEmail', 'address', 'city', 'state_province', 'postcode');
+
+            return;
+        }
 
         $user->unsetRelation('organizations');
         $user->switchOrganization($organization);

@@ -45,6 +45,13 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function siteAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_site_admin' => true,
+        ]);
+    }
+
     /**
      * Make the user a member of the organization (a new one by default) and select it.
      */

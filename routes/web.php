@@ -37,6 +37,7 @@ Route::middleware('portal')->group(function () {
 
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('organizations/create', CreateOrganization::class)->name('organizations.create');
+        Route::view('organizations/none', 'organizations.none')->name('organizations.none');
         Route::post('organizations/{organization}/switch', SwitchOrganizationController::class)->name('organizations.switch');
 
         Route::middleware('organization')->group(function () {

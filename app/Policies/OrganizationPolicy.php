@@ -7,6 +7,14 @@ use App\Models\User;
 
 class OrganizationPolicy
 {
+    /**
+     * Only site admins create organizations while the portal is invite-only.
+     */
+    public function create(User $user): bool
+    {
+        return $user->isSiteAdmin();
+    }
+
     public function switchTo(User $user, Organization $organization): bool
     {
         return $user->belongsToOrganization($organization);

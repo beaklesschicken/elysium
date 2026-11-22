@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureCurrentOrganization;
 use App\Http\Middleware\EnsurePortalEnabled;
+use App\Http\Middleware\EnsureRegistrationOpen;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'portal' => EnsurePortalEnabled::class,
             'organization' => EnsureCurrentOrganization::class,
+            'registration' => EnsureRegistrationOpen::class,
         ]);
 
         $middleware->prependToPriorityList(

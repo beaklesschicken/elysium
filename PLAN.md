@@ -84,7 +84,32 @@ Problems to fix before building on it:
 - Employee self-service: magic link for an employee to upload their own certificate; manager approves.
 - Reports & exports (CSV/PDF) for inspections.
 - Audit log of who changed what.
-- Plans/billing (`organizations.plan` already exists) — later.
+- Plans/billing (`organizations.plan` already exists) — later. Pricing will probably be based on the number of organizations a customer has (to discuss).
+
+## Brainstorm — Community-sourced credential catalog
+
+Credential details (how long a permit lasts, what it really covers, what it costs) vary by state and county and change over time. Rather than curate it all ourselves, let the customers build it.
+
+**How it could work**
+- Any organization can publish a credential type to the **public** catalog (today only we can; organizations can only make private types).
+- Each organization can **adapt** a public type for itself without changing it for everyone: its own validity period, notes, internal cost, renewal steps. Stored as a per-organization override on top of the shared record.
+- Shared records collect, per credential:
+  - validity period (and whether it renews on a fixed date or from the issue date)
+  - plain-language description ("what this is and who needs it")
+  - official/legal description: the issuer's wording, a link to the source, and the date it was checked
+  - cost estimate (a range, with the date it was reported)
+  - issuer, jurisdiction (state, county, city), renewal process, approved training providers
+- **Learning from real data**: credentials recorded in the app (issue → expiry dates) show the typical validity period, so the catalog can flag when a published value looks wrong. Only aggregates are shared, never one organization's records.
+- **Suggestions and moderation**: organizations propose edits to public records; site admins (or trusted contributors) approve them; every change keeps who/when/source so it can be audited or rolled back. Possibly a "verified" badge once a record is checked against the issuer.
+
+**Community discussion (later)**
+- A site-wide discussion thread per credential: best practices, where to get trained, inspection experiences.
+- Needs moderation, reporting, and a clear line between public community content and private organization data.
+
+**Open questions**
+- Who can publish to the public catalog: any organization, or only after review?
+- Do contributors get credit (name or organization shown) or stay anonymous?
+- How cost estimates are reported and kept current.
 
 ## Phase 3 — Tips (tip split)
 
@@ -107,7 +132,10 @@ Reuses organizations, units and employees from Phase 0.
 1. ~~Phase 0 cleanup and tenancy, with tests.~~ Done 2026-11-22.
 2. ~~Credentials data model + employee/unit/org screens.~~ Done 2026-11-22.
 3. ~~Expiration notifications + dashboard.~~ Done 2026-11-22. Reminder emails are an organization setting, **off by default**.
-4. Turn the portal on in production (Credentials MVP). ← next
+4. Launch readiness, then turn the portal on in production (Credentials MVP). ← next
+   - Invite-only for now: no public sign-up; site admins create organizations and invite their owners.
+   - Email verification required for accounts.
+   - Check production email (Postmark) and test the full flow through the maintenance preview link.
 5. Phase 2 credential features as needed.
 6. Tips: positions, periods, entry grid → rules/engine (after we spec the options) → payroll page.
 

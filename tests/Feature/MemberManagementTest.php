@@ -67,7 +67,7 @@ it('removes a member and their unit assignments', function () {
         ->and($this->manager->current_organization_id)->toBeNull()
         ->and($unit->managers()->count())->toBe(0);
 
-    $this->actingAs($this->manager)->get(route('units.index'))->assertRedirect(route('organizations.create'));
+    $this->actingAs($this->manager)->get(route('units.index'))->assertRedirect(route('organizations.none'));
 });
 
 it('does not let admins remove themselves or an owner', function () {

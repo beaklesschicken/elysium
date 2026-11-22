@@ -128,6 +128,17 @@ it('lets a signed-in person with a matching email accept', function () {
         ->and($existing->current_organization_id)->toBe($this->organization->id);
 });
 
+it('counts accepting an invitation as verifying the email', function () {
+    $unverified = User::factory()->unverified()->create(['email' => 'pending@example.com']);
+    Invitation::factory()->for($this->organization)->withToken('verify-me')->create(['email' => 'pending@example.com']);
+    $this->actingAs($unverified);
+
+    Livewire::test(AcceptInvitation::class, ['token' => 'verify-me'])->call('accept');
+
+    expect($unverified->fresh()->hasVerifiedEmail())->toBeTrue();
+    $this->get('/dashboard')->assertOk();
+});
+
 it('does not lower the role of someone already in the organization', function () {
     $admin = User::factory()->inOrganization($this->organization, OrganizationRole::Admin)->create();
     Invitation::factory()->for($this->organization)->withToken('again')->create([

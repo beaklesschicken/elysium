@@ -36,8 +36,10 @@
                                 </flux:menu.item>
                             </form>
                         @endforeach
-                        <flux:menu.separator />
-                        <flux:menu.item icon="plus" :href="route('organizations.create')" wire:navigate>{{ __('New organization') }}</flux:menu.item>
+                        @if ($currentUser->isSiteAdmin())
+                            <flux:menu.separator />
+                            <flux:menu.item icon="plus" :href="route('organizations.create')" wire:navigate>{{ __('New organization') }}</flux:menu.item>
+                        @endif
                     </flux:menu>
                 </flux:dropdown>
             @endif

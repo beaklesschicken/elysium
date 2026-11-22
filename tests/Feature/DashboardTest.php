@@ -15,10 +15,24 @@ test('members can visit the dashboard', function () {
     $this->get('/dashboard')->assertOk();
 });
 
-test('users without an organization are sent to set one up', function () {
-    $this->actingAs(User::factory()->create());
+test('users without an organization are told to wait for an invitation', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $this->get('/dashboard')->assertRedirect(route('organizations.none'));
+    $this->get(route('organizations.none'))->assertOk()->assertSee($user->email);
+});
+
+test('site admins without an organization are sent to create one', function () {
+    $this->actingAs(User::factory()->siteAdmin()->create());
 
     $this->get('/dashboard')->assertRedirect(route('organizations.create'));
+});
+
+test('unverified users must verify their email first', function () {
+    $this->actingAs(User::factory()->unverified()->inOrganization()->create());
+
+    $this->get('/dashboard')->assertRedirect(route('verification.notice'));
 });
 
 test('admins see the setup checklist until it is done', function () {

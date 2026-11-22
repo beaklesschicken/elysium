@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\OrganizationRole;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -48,6 +48,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_site_admin' => 'boolean',
         ];
     }
 
@@ -122,6 +123,14 @@ class User extends Authenticatable
     public function managesUnit(Unit $unit): bool
     {
         return $this->managedUnits()->whereKey($unit->id)->exists();
+    }
+
+    /**
+     * Runs the service itself; can create organizations while sign-up is invite-only.
+     */
+    public function isSiteAdmin(): bool
+    {
+        return (bool) $this->is_site_admin;
     }
 
     public function switchOrganization(Organization $organization): bool

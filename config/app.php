@@ -41,6 +41,13 @@ return [
     'portal_enabled' => (bool) env('APP_PORTAL_ENABLED', false),
 
     /*
+    | Public sign-up. Off while the portal is invite-only: people join through an
+    | invitation, and site admins create organizations.
+    */
+
+    'registration_open' => (bool) env('APP_REGISTRATION_OPEN', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
