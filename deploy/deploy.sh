@@ -2,8 +2,9 @@
 # Deploys production for Elysium Hospitality. Runs on the server as `elysium`, no sudo needed.
 # From a checkout of this repository:
 #
-#   ssh elysium@ericthedead.com 'bash -s' < deploy/deploy.sh                  # deploy, then go live
-#   ssh elysium@ericthedead.com 'bash -s -- --stay-down' < deploy/deploy.sh    # deploy, stay in maintenance
+#   ssh elysium@ericthedead.com 'bash -s' < deploy/deploy.sh                  # deploy; a live site stays live,
+#                                                                             # a site that was down stays down
+#   ssh elysium@ericthedead.com 'bash -s -- --stay-down' < deploy/deploy.sh    # deploy, then show coming soon
 #   ssh elysium@ericthedead.com 'bash -s -- --go-live' < deploy/deploy.sh      # only take maintenance off
 #   ssh elysium@ericthedead.com 'bash -s -- --status' < deploy/deploy.sh
 #
@@ -69,9 +70,23 @@ fi
 cd "$APP_DIR"
 
 [[ -s "$SECRET_FILE" ]] || { (umask 077; openssl rand -hex 16 > "$SECRET_FILE"); }
+
+# go_down coming-soon|plain: maintenance mode, showing the coming-soon page when asked and it exists.
+# Falls back to the plain page so a render problem can never leave the site up.
+go_down() {
+    local args=(--secret="$(cat "$SECRET_FILE")" --retry=60)
+    if [[ $1 == coming-soon && -f resources/views/coming-soon.blade.php ]]; then
+        php artisan down "${args[@]}" --render=coming-soon && return 0
+    fi
+    php artisan down "${args[@]}"
+}
+
+# A site that is already down (e.g. showing coming soon) stays down until --go-live.
+WAS_DOWN=0
+[[ -f storage/framework/down ]] && WAS_DOWN=1 && STAY_DOWN=1
 if [[ -f vendor/autoload.php ]]; then
     log "Maintenance mode"
-    php artisan down --secret="$(cat "$SECRET_FILE")" --retry=60 || true
+    if [[ $WAS_DOWN == 1 || $FIRST == 1 ]]; then go_down coming-soon || true; else go_down plain || true; fi
 fi
 trap 'echo "Deploy failed; the site stays in maintenance mode. Fix and re-run." >&2' ERR
 
@@ -141,10 +156,10 @@ grep -qE '^APP_PORTAL_ENABLED=true' .env && echo "WARNING: APP_PORTAL_ENABLED=tr
 trap - ERR
 touch "$FIRST_DONE_MARKER"
 if [[ $STAY_DOWN == 1 || $FIRST == 1 ]]; then
-    log "Deployed $(git log -1 --format='%h'). Still in maintenance mode."
+    go_down coming-soon || true
+    log "Deployed $(git log -1 --format='%h'). Still in maintenance mode, showing the coming-soon page."
     echo "Preview: https://elysiumhospitality.net/$(cat "$SECRET_FILE")"
     echo "Go live: ssh elysium@ericthedead.com 'bash -s -- --go-live' < deploy/deploy.sh"
-    [[ $FIRST == 1 ]] && php artisan down --secret="$(cat "$SECRET_FILE")" --retry=60 || true
 else
     php artisan up
     log "Deployed $(git log -1 --format='%h') on $(date '+%a %b %-d %Y at %-I:%M %p %Z'). Live."
