@@ -108,8 +108,12 @@
                 </div>
 
                 <div class="grid gap-6 sm:grid-cols-6">
-                    <flux:input wire:model="issuingAuthority" :label="__('Issued by')" class="sm:col-span-4" />
-                    <flux:input wire:model="usState" :label="__('State')" maxlength="2" placeholder="IN" class="sm:col-span-2" />
+                    <div class="sm:col-span-4">
+                        <flux:input wire:model="issuingAuthority" :label="__('Issued by')" />
+                    </div>
+                    <div class="sm:col-span-2">
+                        <flux:input wire:model="usState" :label="__('State')" maxlength="2" placeholder="IN" />
+                    </div>
                 </div>
 
                 <flux:input wire:model="validityMonths" type="number" min="1" max="240" :label="__('Usually valid for (months)')" :description:trailing="__('Used to suggest an expiration date. Leave empty if it varies.')" />

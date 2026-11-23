@@ -31,8 +31,8 @@ return [
     ],
 
     'display_prices' => [
-        'monthly' => (int) env('BILLING_UNIT_PRICE_MONTHLY', 29),
-        'annual' => (int) env('BILLING_UNIT_PRICE_ANNUAL', 290),
+        'monthly' => (int) env('BILLING_UNIT_PRICE_MONTHLY', 10),
+        'annual' => (int) env('BILLING_UNIT_PRICE_ANNUAL', 100),
     ],
 
     /*
@@ -46,7 +46,7 @@ return [
 
     'free' => [
         'units' => 1,
-        'employees' => 25,
+        'employees' => 10,
     ],
 
 ];

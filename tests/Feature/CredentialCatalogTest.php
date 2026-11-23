@@ -39,6 +39,14 @@ it('lets admins add a private type', function () {
         ->and($type->validity_months)->toBe(12);
 });
 
+it('lays out the issued by and state fields on grid wrappers', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Types::class)
+        ->assertSeeHtml('<div class="sm:col-span-4">')
+        ->assertSeeHtml('<div class="sm:col-span-2">');
+});
+
 it('validates new types', function (string $field, string $value, string $rule) {
     $this->actingAs($this->admin);
 

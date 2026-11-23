@@ -3,7 +3,7 @@
 Two products behind one login at elysiumhospitality.net, sharing the same organizations, units and employees:
 
 1. **Credentials** (build first) — multi-tenant tracking of employee and organization credentials: liquor/beverage permits, trainings, certificates, and the organization's own permits.
-2. **Tips** (build second) — tip entry per pay period, tip-out calculation, and a payroll output page. Replaces spreadsheets. Tip-out options to be defined later.
+2. **Tips** (build second) — tip entry per pay period, tip-out calculation, and a payroll output page. Replaces spreadsheets. Tip-out options to be defined later. Sold as a paid **add-on** to the Credentials subscription.
 
 The portal stays behind `APP_PORTAL_ENABLED` (off in production) until the Credentials MVP is done.
 
@@ -98,8 +98,10 @@ Decided 2026-11-22.
 - **Config**: `config/billing.php` holds the trial length, free limits and the per-unit display prices; Stripe price IDs come from `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_ANNUAL`, keys from `STRIPE_KEY` / `STRIPE_SECRET` / `STRIPE_WEBHOOK_SECRET`.
 - **Webhooks**: Cashier's `/stripe/webhook` route (CSRF-exempt, signature-checked when the secret is set) keeps `subscriptions` in sync. Events to enable: `customer.subscription.created/updated/deleted`, `customer.updated`, `customer.deleted`, `payment_method.automatically_updated`, `invoice.payment_action_required`, `invoice.payment_succeeded` (`php artisan cashier:webhook` creates them).
 
+- **Tips is an add-on** (decided 2026-11-23): organizations subscribe to Credentials (the base plan) and can add Tips on top. Plan: a second Stripe price on the same subscription (Cashier multi-product subscription), with `Organization::hasTipsAddOn()` gating the Tips routes and navigation through a policy. Add-on pricing (per unit like the base plan, or flat), whether the trial includes Tips, and whether Tips can be bought without Credentials are still to be decided.
+
 To do before charging real customers:
-- Create the Stripe product and the two per-unit prices (monthly and annual), set the real display prices in `.env` (`BILLING_UNIT_PRICE_MONTHLY` / `BILLING_UNIT_PRICE_ANNUAL`, placeholders are $29 / $290), and configure the customer portal in the Stripe dashboard (allow switching between the two prices and cancelling).
+- Create the Stripe product and the two per-unit prices (monthly and annual), set the real display prices in `.env` (`BILLING_UNIT_PRICE_MONTHLY` / `BILLING_UNIT_PRICE_ANNUAL`, defaults are $10 / $100 per unit, change them in `.env` together with the Stripe prices), and configure the customer portal in the Stripe dashboard (allow switching between the two prices and cancelling).
 - Decide on sales tax (Stripe Tax) and invoice emails.
 
 Open: reactivating an inactive employee isn't counted against the Free limit (only new employees are); fine for now.
@@ -133,6 +135,8 @@ Credential details (how long a permit lasts, what it really covers, what it cost
 
 Reuses organizations, units and employees from Phase 0.
 
+Paid add-on: only organizations with the Tips add-on (see Billing / plans) see and use these screens.
+
 **Concepts**
 - **Positions** per unit (server, bartender, busser, host, barback, kitchen) — also useful for credential requirements.
 - **Pay period**: per-unit setting, weekly or bi-weekly, with a start day. Status: open → calculated → finalized (locked).
@@ -165,3 +169,4 @@ Reuses organizations, units and employees from Phase 0.
 4. ~~Who receives expiration alerts?~~ Owners/admins get everything; unit managers get their units and those units' employees. Opt-in per organization.
 5. Can a manager belong to multiple units / an employee work at multiple units? (Schema allows both.)
 6. Tips: what's entered per shift, which tip-out methods are needed, and what format does payroll need? (Later.)
+7. Tips add-on pricing: per unit or flat, included in the trial or not, available without Credentials or not?

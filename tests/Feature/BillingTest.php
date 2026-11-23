@@ -205,11 +205,11 @@ describe('billing page', function () {
 
         Livewire::test(Billing::class)
             ->assertSee('Free trial')
-            ->assertSee('$29')
-            ->assertSee('2 units today: $58 / month.')
+            ->assertSee('$10')
+            ->assertSee('2 units today: $20 / month.')
             ->set('interval', 'annual')
-            ->assertSee('$290')
-            ->assertSee('2 units today: $580 / year.');
+            ->assertSee('$100')
+            ->assertSee('2 units today: $200 / year.');
     });
 
     it('rejects an unknown interval', function () {
