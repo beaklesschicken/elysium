@@ -9,6 +9,8 @@
         @endcan
     </div>
 
+    <x-plan-limit-callout resource="units" />
+
     @if ($units->isEmpty())
         <flux:card class="text-center" variant="outline">
             <flux:heading>{{ __('No units yet') }}</flux:heading>

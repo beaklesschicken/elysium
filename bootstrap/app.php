@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'registration' => EnsureRegistrationOpen::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+        ]);
+
         $middleware->prependToPriorityList(
             before: AuthenticatesRequests::class,
             prepend: EnsurePortalEnabled::class,

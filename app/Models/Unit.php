@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\SyncSubscriptionQuantity;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Concerns\HasCredentials;
 use Database\Factories\UnitFactory;
@@ -28,6 +29,15 @@ class Unit extends Model
         'postcode',
         'phone',
     ];
+
+    /**
+     * The subscription is billed per unit, so adding or removing one changes the quantity.
+     */
+    protected static function booted(): void
+    {
+        static::created(fn (Unit $unit) => SyncSubscriptionQuantity::dispatch((int) $unit->organization_id)->afterCommit());
+        static::deleted(fn (Unit $unit) => SyncSubscriptionQuantity::dispatch((int) $unit->organization_id)->afterCommit());
+    }
 
     /**
      * @return BelongsToMany<User, $this>

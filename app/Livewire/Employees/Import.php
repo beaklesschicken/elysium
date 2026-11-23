@@ -125,6 +125,17 @@ class Import extends Component
             return;
         }
 
+        $organization = Auth::user()->currentOrganization;
+
+        if (! $organization->canAddEmployees(count($prepared))) {
+            $this->rowErrors[] = __('The :plan plan allows :limit active employees. Subscribe to import more.', [
+                'plan' => $organization->plan()->label(),
+                'limit' => $organization->plan()->employeeLimit(),
+            ]);
+
+            return;
+        }
+
         DB::transaction(function () use ($prepared): void {
             foreach ($prepared as $item) {
                 $employee = Employee::create($item['attributes']);

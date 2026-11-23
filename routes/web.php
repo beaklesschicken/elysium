@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CredentialDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SwitchOrganizationController;
@@ -10,6 +11,7 @@ use App\Livewire\Employees\Import as ImportEmployees;
 use App\Livewire\Employees\Index as EmployeeIndex;
 use App\Livewire\Employees\Show as ShowEmployee;
 use App\Livewire\Invitations\AcceptInvitation;
+use App\Livewire\Organizations\Billing;
 use App\Livewire\Organizations\CreateOrganization;
 use App\Livewire\Organizations\EditOrganization;
 use App\Livewire\Organizations\Members;
@@ -61,6 +63,10 @@ Route::middleware('portal')->group(function () {
             Route::get('organization', EditOrganization::class)->name('organization.edit');
             Route::get('organization/members', Members::class)->name('organization.members');
             Route::get('organization/permits', Permits::class)->name('organization.permits');
+
+            Route::get('organization/billing', Billing::class)->name('organization.billing');
+            Route::post('organization/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+            Route::get('organization/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
         });
     });
 

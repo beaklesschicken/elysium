@@ -58,6 +58,9 @@
                     <flux:navlist.group :heading="__('Organization')" class="grid">
                         <flux:navlist.item icon="user-group" :href="route('organization.members')" :current="request()->routeIs('organization.members')" wire:navigate>{{ __('People & access') }}</flux:navlist.item>
                         <flux:navlist.item icon="cog-6-tooth" :href="route('organization.edit')" :current="request()->routeIs('organization.edit')" wire:navigate>{{ __('Details') }}</flux:navlist.item>
+                        @can('manageBilling', $currentOrganization)
+                            <flux:navlist.item icon="credit-card" :href="route('organization.billing')" :current="request()->routeIs('organization.billing')" wire:navigate>{{ __('Billing') }}</flux:navlist.item>
+                        @endcan
                     </flux:navlist.group>
                 @endif
             </flux:navlist>

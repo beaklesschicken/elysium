@@ -84,7 +84,25 @@ Problems to fix before building on it:
 - Employee self-service: magic link for an employee to upload their own certificate; manager approves.
 - Reports & exports (CSV/PDF) for inspections.
 - Audit log of who changed what.
-- Plans/billing (`organizations.plan` already exists) — later. Pricing will probably be based on the number of organizations a customer has (to discuss).
+- ~~Plans/billing~~ — see Billing / plans below.
+
+## Billing / plans
+
+Decided 2026-11-22.
+
+- **Provider**: Stripe through Laravel Cashier (`laravel/cashier`). Stripe Checkout starts a subscription; the Stripe customer portal handles cards, invoices, plan interval changes and cancelling. The **organization** is the billable model (`Cashier::useCustomerModel(Organization::class)`), so each organization has its own subscription.
+- **Pricing**: per unit. One paid plan ("Standard") billed at a price per unit, monthly or annual (annual discounted). The subscription quantity is the organization's unit count (minimum 1) and is updated automatically when units are added or deleted (prorated). No caps on the paid plan.
+- **Trial**: 14 days, no card required. Every new organization starts on a generic trial (`organizations.trial_ends_at`) with no limits. If an owner subscribes during the trial, Stripe keeps the remaining trial days before the first charge.
+- **Who manages billing**: owners only (`OrganizationPolicy::manageBilling`). Admins and managers don't see the Billing page.
+- **No active subscription** (trial over, cancelled after the paid period, or payment past due): the organization falls back to the **Free** plan: 1 unit and 25 active employees. Nothing is deleted or locked; adding units/employees beyond the limit is blocked by the `UnitPolicy`/`EmployeePolicy` `create` checks (and CSV import checks the row count). Owners see a prompt to subscribe.
+- **Config**: `config/billing.php` holds the trial length, free limits and the per-unit display prices; Stripe price IDs come from `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_ANNUAL`, keys from `STRIPE_KEY` / `STRIPE_SECRET` / `STRIPE_WEBHOOK_SECRET`.
+- **Webhooks**: Cashier's `/stripe/webhook` route (CSRF-exempt, signature-checked when the secret is set) keeps `subscriptions` in sync. Events to enable: `customer.subscription.created/updated/deleted`, `customer.updated`, `customer.deleted`, `payment_method.automatically_updated`, `invoice.payment_action_required`, `invoice.payment_succeeded` (`php artisan cashier:webhook` creates them).
+
+To do before charging real customers:
+- Create the Stripe product and the two per-unit prices (monthly and annual), set the real display prices in `.env` (`BILLING_UNIT_PRICE_MONTHLY` / `BILLING_UNIT_PRICE_ANNUAL`, placeholders are $29 / $290), and configure the customer portal in the Stripe dashboard (allow switching between the two prices and cancelling).
+- Decide on sales tax (Stripe Tax) and invoice emails.
+
+Open: reactivating an inactive employee isn't counted against the Free limit (only new employees are); fine for now.
 
 ## Brainstorm — Community-sourced credential catalog
 

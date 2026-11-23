@@ -23,10 +23,14 @@ class EmployeePolicy
     }
 
     /**
-     * Admins, and managers adding people to their own units.
+     * Admins, and managers adding people to their own units, while the plan has room.
      */
     public function create(User $user): bool
     {
+        if (! ($user->currentOrganization?->canAddEmployees() ?? false)) {
+            return false;
+        }
+
         return $user->isOrganizationAdmin() || $user->managedUnits()->exists();
     }
 

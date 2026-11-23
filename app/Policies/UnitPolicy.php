@@ -21,9 +21,12 @@ class UnitPolicy
         return $user->isOrganizationAdmin() || $user->managesUnit($unit);
     }
 
+    /**
+     * Admins, while the organization's plan has room for another unit.
+     */
     public function create(User $user): bool
     {
-        return $user->isOrganizationAdmin();
+        return $user->isOrganizationAdmin() && ($user->currentOrganization?->canAddUnit() ?? false);
     }
 
     public function update(User $user, Unit $unit): bool

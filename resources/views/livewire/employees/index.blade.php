@@ -12,6 +12,8 @@
         @endcan
     </div>
 
+    <x-plan-limit-callout resource="employees" />
+
     <div class="grid gap-4 sm:grid-cols-3">
         <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Search name or email')" clearable />
         <flux:select wire:model.live="status" variant="listbox" :prefix="__('Status:')">
