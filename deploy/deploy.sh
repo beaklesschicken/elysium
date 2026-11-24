@@ -158,7 +158,7 @@ chmod -R u+rwX,g=rX,o= app config public resources routes vendor
 for key in POSTMARK_TOKEN MAIL_CONTACT_TO; do
     grep -qE "^$key=.+" .env || echo "WARNING: $key is empty, so the contact form can't send mail. Set it with deploy/set-env-secret.sh $key"
 done
-grep -qE '^APP_PORTAL_ENABLED=true' .env && echo "WARNING: APP_PORTAL_ENABLED=true; the unfinished portal (login, teams) is public."
+grep -qE '^APP_PORTAL_ENABLED=true' .env || echo "NOTE: APP_PORTAL_ENABLED is off; login and the app are hidden."
 
 trap - ERR
 touch "$FIRST_DONE_MARKER"

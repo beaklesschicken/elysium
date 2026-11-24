@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Invitations;
 
+use App\Livewire\Actions\Logout;
 use App\Models\Invitation;
 use App\Models\Organization;
 use App\Models\User;
@@ -86,6 +87,16 @@ class AcceptInvitation extends Component
         session()->regenerate();
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
+    }
+
+    /**
+     * Signed in as someone else: log out and come back to this invitation.
+     */
+    public function switchAccount(Logout $logout): void
+    {
+        $logout();
+
+        $this->redirect(route('invitations.accept', $this->token));
     }
 
     private function invitation(): ?Invitation

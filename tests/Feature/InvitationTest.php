@@ -166,6 +166,18 @@ it('refuses someone signed in with a different email', function () {
     expect($wrongPerson->fresh()->belongsToOrganization($this->organization))->toBeFalse();
 });
 
+it('lets someone signed in with a different email log out and come back to the invitation', function () {
+    Invitation::factory()->for($this->organization)->withToken('switch-account')->create(['email' => 'right@example.com']);
+    $this->actingAs(User::factory()->inOrganization()->create(['email' => 'wrong@example.com']));
+
+    Livewire::test(AcceptInvitation::class, ['token' => 'switch-account'])
+        ->assertSee('Log out and continue as right@example.com')
+        ->call('switchAccount')
+        ->assertRedirect(route('invitations.accept', 'switch-account'));
+
+    $this->assertGuest();
+});
+
 it('sends people who already have an account to log in first', function () {
     User::factory()->create(['email' => 'has-account@example.com']);
     Invitation::factory()->for($this->organization)->withToken('log-in-first')->create(['email' => 'has-account@example.com']);

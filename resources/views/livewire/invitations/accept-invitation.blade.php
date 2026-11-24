@@ -12,9 +12,10 @@
             @else
                 <flux:callout icon="exclamation-triangle" color="amber">
                     <flux:callout.text>
-                        {{ __('This invitation is for :invited, but you are signed in as :current. Log out and open the link again.', ['invited' => $invitation->email, 'current' => $signedInUser->email]) }}
+                        {{ __('This invitation is for :invited, but you are signed in as :current.', ['invited' => $invitation->email, 'current' => $signedInUser->email]) }}
                     </flux:callout.text>
                 </flux:callout>
+                <flux:button wire:click="switchAccount" variant="primary" class="w-full">{{ __('Log out and continue as :invited', ['invited' => $invitation->email]) }}</flux:button>
             @endif
         @elseif ($hasAccount)
             <flux:text class="text-center">{{ __('You already have an account for :email. Log in to accept.', ['email' => $invitation->email]) }}</flux:text>
