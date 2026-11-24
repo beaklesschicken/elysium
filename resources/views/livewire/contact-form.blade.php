@@ -1,64 +1,53 @@
 <div>
-    <section class="animation-fade animation-delay">
-            @if ($success)
-                <div class="inline-flex ml-3 overflow-hidden bg-white rounded-lg shadow-sm">
-                    <div class="flex items-center justify-center w-12 bg-green-500">
-                    </div>
-                    <div class="px-3 py-2 text-left">
-                        <span class="font-semibold text-green-500">Success</span>
-                        <p class="mb-1 text-sm leading-none text-gray-500">{{ $success }}</p>
-                    </div>
-                </div>
-            @endif
-            <div class="h-full sm:flex">
-                <div class="flex items-center justify-center w-full p-10">
-                    <form wire:submit.prevent="contactFormSubmit" action="/contact" method="POST" class="w-full">
-                        @csrf
-                        <div class="hidden" aria-hidden="true">
-                            <label for="contact-website">Leave this field empty</label>
-                            <input id="contact-website" type="text" wire:model="website" name="website" tabindex="-1" autocomplete="off" />
-                        </div>
-                        <div class="pb-3">
-                            @error('email')
-                                <p class="text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                            {{-- <input wire:model="email" class="w-full px-5 py-3 border border-gray-400 rounded-lg outline-none focus:shadow-outline" type="text" placeholder="Email Address" name="email" value="{{ old('email') }}" /> --}}
-                            <flux:input icon="envelope" type="email" wire:model='email' name="email" class="border-gray-400 border rounded-md" placeholder="Email Address" value="{{ old('email') }}"/>
-                        </div>
-                        <div class="py-3">
-                            @error('name')
-                                <p class="text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                            {{-- <input wire:model="name" class="w-full px-5 py-3 border border-gray-400 rounded-lg outline-none focus:shadow-outline" type="text" placeholder="Name" name="name" value="{{ old('name') }}" /> --}}
-                            <flux:input icon="user" type="text" wire:model='name' class="border-gray-400 border rounded-md" placeholder="Your Name" value="{{ old('name') }}" />
-                        </div>
-                        <div class="py-3">
-                            @error('business')
-                                <p class="text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                            {{-- <input wire:model="name" class="w-full px-5 py-3 border border-gray-400 rounded-lg outline-none focus:shadow-outline" type="text" placeholder="Name" name="name" value="{{ old('name') }}" /> --}}
-                            <flux:input icon="building" type="text" wire:model='business' class="border-gray-400 border rounded-md" placeholder="Business Name" value="{{ old('business') }}" />
-                        </div>
-                        <div class="py-3">
-                            @error('zipcode')
-                                <p class="text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                            {{-- <input wire:model="name" class="w-full px-5 py-3 border border-gray-400 rounded-lg outline-none focus:shadow-outline" type="text" placeholder="Name" name="name" value="{{ old('name') }}" /> --}}
-                            <flux:input icon="map-pinned" type="text" wire:model='zipcode' class="border-gray-400 border rounded-md" placeholder="Zipcode" value="{{ old('zipcode') }}" />
-                        </div>
-                        <div class="py-3">
-                            @error('comment')
-                                <p class="text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                            <textarea wire:model="comment" row="4" class="w-full h-40 px-5 py-3 border border-gray-400 rounded-lg outline-none focus:shadow-outline" name="comment" placeholder="Your message here...">{{ old('comment') }}</textarea>
-                        </div>
-                        <div class="pt-3">
-                            <button class="flex px-6 py-3 text-white bg-indigo-500 rounded-md hover:bg-indigo-600 hover:text-white focus:outline-none focus:shadow-outline focus:border-indigo-300" type="submit">
-                                <span class="self-center float-left ml-3 text-base font-medium">Submit</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <section>
+        @if ($success)
+            <div class="mb-6 border-l-2 border-gold bg-gold/10 px-4 py-3">
+                <p class="text-sm font-medium text-gold-light">Thank you</p>
+                <p class="mt-1 text-sm text-silver/80">{{ $success }}</p>
             </div>
+        @endif
+        <form wire:submit.prevent="contactFormSubmit" action="/contact" method="POST" class="grid gap-5 sm:grid-cols-2">
+            @csrf
+            <div class="hidden" aria-hidden="true">
+                <label for="contact-website">Leave this field empty</label>
+                <input id="contact-website" type="text" wire:model="website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+            <div class="sm:col-span-2">
+                <flux:input icon="envelope" type="email" wire:model="email" name="email" placeholder="Email address" />
+                @error('email')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <flux:input icon="user" type="text" wire:model="name" placeholder="Your name" />
+                @error('name')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <flux:input icon="building" type="text" wire:model="business" placeholder="Business name" />
+                @error('business')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="sm:col-span-2">
+                <flux:input icon="map-pinned" type="text" wire:model="zipcode" placeholder="Zipcode" />
+                @error('zipcode')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="sm:col-span-2">
+                <flux:textarea wire:model="comment" name="comment" rows="6" placeholder="Your message here..." />
+                @error('comment')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                @enderror
+            </div>
+            <div class="sm:col-span-2">
+                <button type="submit" wire:loading.attr="disabled" class="bg-gold px-8 py-3 text-sm font-medium tracking-wide text-ink transition hover:bg-gold-light focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink disabled:opacity-60">
+                    <span wire:loading.remove wire:target="contactFormSubmit">Send message</span>
+                    <span wire:loading wire:target="contactFormSubmit">Sending…</span>
+                </button>
+            </div>
+        </form>
     </section>
 </div>
