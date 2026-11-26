@@ -20,6 +20,23 @@ it('ships a public catalog', function () {
         ->toContain('Alcohol server permit', 'Retail alcohol permit', 'Business registration');
 });
 
+it('ships Indiana validity periods', function () {
+    $indiana = CredentialType::whereNull('organization_id')->where('us_state', 'IN')->get()->keyBy('name');
+
+    expect($indiana['Alcohol server permit']->validity_months)->toBeNull()
+        ->and($indiana['Restricted employee permit']->expires_at_age)->toBe(21)
+        ->and($indiana['Alcohol server certification']->validity_months)->toBe(36)
+        ->and($indiana['Retail alcohol permit']->validity_months)->toBe(12)
+        ->and($indiana['Food protection manager certification']->validity_months)->toBe(60)
+        ->and($indiana['Retail merchant certificate']->validity_months)->toBe(24);
+});
+
+it('shows age-limited types as lasting until that age', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Types::class)->assertSee('Until age 21');
+});
+
 it('lets admins add a private type', function () {
     $this->actingAs($this->admin);
 

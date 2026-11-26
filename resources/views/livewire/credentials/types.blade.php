@@ -49,7 +49,7 @@
                         </flux:table.cell>
                         <flux:table.cell>{{ $type->holder_type->label() }}</flux:table.cell>
                         <flux:table.cell class="max-md:hidden">{{ $type->issuing_authority ?? '—' }}</flux:table.cell>
-                        <flux:table.cell class="max-md:hidden">{{ $type->validity_months ? trans_choice(':count month|:count months', $type->validity_months) : __('Varies') }}</flux:table.cell>
+                        <flux:table.cell class="max-md:hidden">{{ $type->expires_at_age ? __('Until age :age', ['age' => $type->expires_at_age]) : ($type->validity_months ? trans_choice(':count month|:count months', $type->validity_months) : __('Varies')) }}</flux:table.cell>
                         <flux:table.cell align="end">{{ $type->credentials_count }}</flux:table.cell>
                         <flux:table.cell align="end">
                             @can('update', $type)

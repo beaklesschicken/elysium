@@ -120,6 +120,7 @@ Credential details (how long a permit lasts, what it really covers, what it cost
   - cost estimate (a range, with the date it was reported)
   - issuer, jurisdiction (state, county, city), renewal process, approved training providers
 - **Learning from real data**: credentials recorded in the app (issue → expiry dates) show the typical validity period, so the catalog can flag when a published value looks wrong. Only aggregates are shared, never one organization's records.
+- **Duplicate check when adding a custom type**: as someone types a new credential type, search existing public and organization types (fuzzy name match, plus category, issuer and state) and suggest "use this one" or "adapt this one" before a new record is created. Without this the catalog fills with near-identical entries ("Server permit", "Alcohol server permit IN", "ATC employee permit"). Also useful for site admins to merge duplicates that slip through.
 - **Suggestions and moderation**: organizations propose edits to public records; site admins (or trusted contributors) approve them; every change keeps who/when/source so it can be audited or rolled back. Possibly a "verified" badge once a record is checked against the issuer.
 
 **Community discussion (later)**
@@ -165,7 +166,7 @@ Paid add-on: only organizations with the Tips add-on (see Billing / plans) see a
 
 1. ~~Rename `teams` → `units`?~~ Done.
 2. ~~Spatie or simple roles + policies?~~ Simple roles (`owner`, `admin`, `manager`) + policies; Spatie leftovers removed.
-3. Which states do customers operate in? The public catalog starts with Indiana entries plus generic ones; validity periods are left blank until confirmed.
+3. ~~Which states do customers operate in?~~ Indiana first (decided 2026-11-26). The public catalog starts with Indiana entries plus generic ones; validity periods are left blank until confirmed.
 4. ~~Who receives expiration alerts?~~ Owners/admins get everything; unit managers get their units and those units' employees. Opt-in per organization.
 5. Can a manager belong to multiple units / an employee work at multiple units? (Schema allows both.)
 6. Tips: what's entered per shift, which tip-out methods are needed, and what format does payroll need? (Later.)

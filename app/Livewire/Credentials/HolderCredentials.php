@@ -346,7 +346,7 @@ class HolderCredentials extends Component
         $type = $this->availableTypes->firstWhere('id', (int) $this->credentialTypeId);
         $issuedOn = $this->issuedOn !== '' ? Carbon::parse($this->issuedOn) : null;
 
-        $this->expiresOn = $type?->defaultExpiryFrom($issuedOn)?->toDateString() ?? '';
+        $this->expiresOn = $type?->defaultExpiryFrom($issuedOn, $this->holder)?->toDateString() ?? '';
     }
 
     /**

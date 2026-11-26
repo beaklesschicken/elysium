@@ -30,6 +30,7 @@ class CredentialType extends Model
         'issuing_authority',
         'us_state',
         'validity_months',
+        'expires_at_age',
         'info_link',
         'description',
     ];
@@ -43,6 +44,7 @@ class CredentialType extends Model
             'category' => CredentialCategory::class,
             'holder_type' => CredentialHolderType::class,
             'validity_months' => 'integer',
+            'expires_at_age' => 'integer',
         ];
     }
 
@@ -88,12 +90,24 @@ class CredentialType extends Model
         $query->where('holder_type', $holderType);
     }
 
-    public function defaultExpiryFrom(?Carbon $issuedOn): ?Carbon
+    /**
+     * The usual expiry: the validity period after issue, or the holder's birthday at
+     * `expires_at_age` for age-limited permits, whichever comes first.
+     */
+    public function defaultExpiryFrom(?Carbon $issuedOn, ?Model $holder = null): ?Carbon
     {
-        if ($issuedOn === null || $this->validity_months === null) {
-            return null;
+        $byValidity = $issuedOn !== null && $this->validity_months !== null
+            ? $issuedOn->copy()->addMonthsNoOverflow($this->validity_months)
+            : null;
+
+        $byAge = $this->expires_at_age !== null && $holder instanceof Employee && $holder->birth_date !== null
+            ? $holder->birth_date->copy()->addYearsNoOverflow($this->expires_at_age)
+            : null;
+
+        if ($byValidity === null || $byAge === null) {
+            return $byValidity ?? $byAge;
         }
 
-        return $issuedOn->copy()->addMonthsNoOverflow($this->validity_months);
+        return $byValidity->min($byAge);
     }
 }

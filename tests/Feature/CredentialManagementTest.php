@@ -23,6 +23,17 @@ beforeEach(function () {
     $this->permitType = CredentialType::factory()->create(['name' => 'Server permit', 'validity_months' => 24]);
 });
 
+it('fills a restricted permit\'s expiry from the employee\'s 21st birthday', function () {
+    $this->employee->update(['birth_date' => '2006-03-15']);
+    $restricted = CredentialType::factory()->create(['validity_months' => null, 'expires_at_age' => 21]);
+    $this->actingAs($this->manager);
+
+    Livewire::test(HolderCredentials::class, ['holder' => $this->employee])
+        ->call('startCreate')
+        ->set('credentialTypeId', (string) $restricted->id)
+        ->assertSet('expiresOn', '2027-03-15');
+});
+
 it('adds a credential with a document', function () {
     Storage::fake('local');
     $this->actingAs($this->manager);

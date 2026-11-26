@@ -41,6 +41,24 @@ it('suggests an expiry from the type\'s usual validity', function () {
         ->and(CredentialType::factory()->make(['validity_months' => null])->defaultExpiryFrom(today()))->toBeNull();
 });
 
+it('ends an age-limited permit on the holder\'s birthday', function () {
+    $type = CredentialType::factory()->make(['validity_months' => null, 'expires_at_age' => 21]);
+    $employee = Employee::factory()->make(['birth_date' => Carbon::parse('2006-03-15')]);
+
+    expect($type->defaultExpiryFrom(Carbon::parse('2025-06-01'), $employee)->toDateString())->toBe('2027-03-15')
+        ->and($type->defaultExpiryFrom(null, $employee)->toDateString())->toBe('2027-03-15')
+        ->and($type->defaultExpiryFrom(today(), Employee::factory()->make(['birth_date' => null])))->toBeNull()
+        ->and($type->defaultExpiryFrom(today()))->toBeNull();
+});
+
+it('uses whichever comes first when a type has both a validity and an age limit', function () {
+    $type = CredentialType::factory()->make(['validity_months' => 24, 'expires_at_age' => 21]);
+    $employee = Employee::factory()->make(['birth_date' => Carbon::parse('2006-03-15')]);
+
+    expect($type->defaultExpiryFrom(Carbon::parse('2024-01-10'), $employee)->toDateString())->toBe('2026-01-10')
+        ->and($type->defaultExpiryFrom(Carbon::parse('2026-01-10'), $employee)->toDateString())->toBe('2027-03-15');
+});
+
 it('keeps history when renewing', function () {
     $credential = Credential::factory()->expiresInDays(5)->create();
 
